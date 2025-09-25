@@ -15,20 +15,30 @@ export function Homepage() {
 
   // Fetch tất cả stories
   useEffect(() => {
-    const fetchStories = async () => {
-      const { data, error } = await supabase
-        .from("stories")               // table trong Supabase
-        .select("*")
-        .order("created_at", { ascending: false });
+  const fetchStories = async () => {
+    const { data, error } = await supabase
+      .from("stories")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error(error);
-      } else {
-        setStories(data || []);
-      }
-    };
-    fetchStories();
-  }, []);
+    if (error) {
+      console.error("Supabase fetch error:", error);
+    } else {
+      console.log("Fetched stories:", data); // 👉 Log ra để xem data có về không
+
+      // Map lại field cho khớp UI (StoryCard.tsx dùng camelCase)
+      const mapped = (data || []).map((story) => ({
+        ...story,
+        coverImage: story.coverimage,   // DB trả về "coverimage"
+        lastUpdated: story.created_at,  // dùng cho Clock
+      }));
+
+      setStories(mapped);
+    }
+  };
+  fetchStories();
+}, []);
+
 
   // Handle search
   const handleSearch = (e: React.FormEvent) => {
