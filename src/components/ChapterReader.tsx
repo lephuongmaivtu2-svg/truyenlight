@@ -1,112 +1,119 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  List, 
-  Settings, 
-  Bookmark, 
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import {
+  ChevronLeft,
+  ChevronRight,
+  List,
+  Settings,
+  Bookmark,
   BookmarkCheck,
   Sun,
   Moon,
   Plus,
   Minus,
-  Home
-} from 'lucide-react';
-import { Button } from './ui/button';
-import { Card, CardContent } from './ui/card';
-import { Separator } from './ui/separator';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from './ui/dropdown-menu';
-import { StoryCard } from './StoryCard';
-import { getStoryBySlug, getChapterBySlug, getTopStoriesByViews } from './mockData';
-import { useReading } from './ReadingProvider';
+  Home,
+} from "lucide-react";
+import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
+import { Separator } from "./ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { useReading } from "./ReadingProvider";
+import { fetchChapterById, fetchChaptersOfStory, fetchStoryIdBySlug, fetchTopStories, StoryRow, ChapterRow } from "../lib/api";
+import { StoryCard } from "./StoryCard";
 
 export function ChapterReader() {
   const { slug, chapterSlug } = useParams<{ slug: string; chapterSlug: string }>();
-  const navigate = useNavigate();
   const contentRef = useRef<HTMLDivElement>(null);
   const { preferences, updatePreferences, addBookmark, getBookmark } = useReading();
-  
-  const [isBookmarked, setIsBookmarked] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
 
-  const story = slug ? getStoryBySlug(slug) : null;
-  const chapter = slug && chapterSlug ? getChapterBySlug(slug, chapterSlug) : null;
-  
-  const recommendedStories = getTopStoriesByViews().filter(s => s.id !== story?.id).slice(0, 3);
+  const [storyId, setStoryId] = useState<string | null>(null);
+  const [storyMeta, setStoryMeta] = useState<Pick<StoryRow, "title" | "coverimage" | "slug"> | null>(null);
+  const [chapters, setChapters] = useState<ChapterRow[]>([]);
+  const [chapter, setChapter] = useState<ChapterRow | null>(null);
+  const [recommended, setRecommended] = useState<StoryRow[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  // Load storyId + chapters + current chapter
   useEffect(() => {
-    if (slug && chapterSlug) {
-      const bookmark = getBookmark(slug);
-      setIsBookmarked(bookmark?.chapterSlug === chapterSlug);
-    }
-  }, [slug, chapterSlug, getBookmark]);
+    let alive = true;
+    async function run() {
+      if (!slug || !chapterSlug) return;
+      setLoading(true);
 
-  useEffect(() => {
-    // Save reading position on scroll
-    const handleScroll = () => {
-      if (slug && chapterSlug && contentRef.current) {
-        const scrollPosition = window.scrollY;
-        addBookmark({
-          storySlug: slug,
-          chapterSlug: chapterSlug,
-          scrollPosition
-        });
+      const sId = await fetchStoryIdBySlug(slug);
+      if (!sId) {
+        setLoading(false);
+        return;
       }
+      if (!alive) return;
+
+      setStoryId(sId);
+
+      const list = await fetchChaptersOfStory(sId);
+      if (!alive) return;
+      setChapters(list);
+
+      const chap = await fetchChapterById(sId, chapterSlug);
+      if (!alive) return;
+      setChapter(chap);
+
+      // lấy thêm meta story để hiển thị (nhẹ nhàng lấy từ list top stories nếu có; hoặc thôi bỏ)
+      const rec = await fetchTopStories(3);
+      if (alive) setRecommended(rec);
+
+      // meta cơ bản
+      setStoryMeta({ title: rec[0]?.title ?? "", coverimage: rec[0]?.coverimage ?? "", slug: slug });
+
+      setLoading(false);
+    }
+    run();
+    return () => {
+      alive = false;
     };
+  }, [slug, chapterSlug]);
 
-    const scrollTimer = setInterval(() => {
-      handleScroll();
-    }, 5000); // Save position every 5 seconds
-
-    return () => clearInterval(scrollTimer);
-  }, [slug, chapterSlug, addBookmark]);
-
-  useEffect(() => {
-    // Restore scroll position
-    if (slug && chapterSlug) {
-      const bookmark = getBookmark(slug);
-      if (bookmark && bookmark.chapterSlug === chapterSlug && bookmark.scrollPosition > 0) {
-        setTimeout(() => {
-          window.scrollTo(0, bookmark.scrollPosition);
-        }, 100);
-      }
-    }
+  // bookmark icon state
+  const isBookmarked = useMemo(() => {
+    if (!slug || !chapterSlug) return false;
+    const bm = getBookmark(slug);
+    return bm?.chapterSlug === chapterSlug;
   }, [slug, chapterSlug, getBookmark]);
 
-  if (!story || !chapter) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Chapter Not Found</h1>
-          <p className="text-muted-foreground mb-6">The chapter you're looking for doesn't exist.</p>
-          <Link to="/">
-            <Button>Back to Home</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  const currentChapterIndex = story.chapters.findIndex(c => c.slug === chapterSlug);
-  const previousChapter = currentChapterIndex > 0 ? story.chapters[currentChapterIndex - 1] : null;
-  const nextChapter = currentChapterIndex < story.chapters.length - 1 ? story.chapters[currentChapterIndex + 1] : null;
-
-  const handleBookmark = () => {
-    if (slug && chapterSlug) {
+  // auto-save reading position
+  useEffect(() => {
+    if (!slug || !chapterSlug) return;
+    const timer = setInterval(() => {
       addBookmark({
         storySlug: slug,
-        chapterSlug: chapterSlug,
-        scrollPosition: window.scrollY
+        chapterSlug,
+        scrollPosition: window.scrollY,
       });
-      setIsBookmarked(true);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [slug, chapterSlug, addBookmark]);
+
+  // restore scroll
+  useEffect(() => {
+    if (!slug || !chapterSlug) return;
+    const bm = getBookmark(slug);
+    if (bm && bm.chapterSlug === chapterSlug && bm.scrollPosition > 0) {
+      setTimeout(() => window.scrollTo(0, bm.scrollPosition), 100);
     }
+  }, [slug, chapterSlug, getBookmark]);
+
+  const currentIndex = useMemo(() => chapters.findIndex((c) => c.id === chapterSlug), [chapters, chapterSlug]);
+  const previousChapter = currentIndex > 0 ? chapters[currentIndex - 1] : null;
+  const nextChapter = currentIndex >= 0 && currentIndex < chapters.length - 1 ? chapters[currentIndex + 1] : null;
+
+  const handleBookmark = () => {
+    if (!slug || !chapterSlug) return;
+    addBookmark({ storySlug: slug, chapterSlug, scrollPosition: window.scrollY });
   };
 
   const adjustFontSize = (delta: number) => {
@@ -114,99 +121,83 @@ export function ChapterReader() {
     updatePreferences({ fontSize: newSize });
   };
 
-  const toggleDarkMode = () => {
-    updatePreferences({ darkMode: !preferences.darkMode });
-  };
+  const toggleDarkMode = () => updatePreferences({ darkMode: !preferences.darkMode });
 
-  // Preload next chapter for smooth navigation
+  // preload next
   useEffect(() => {
-    if (nextChapter) {
-      const link = document.createElement('link');
-      link.rel = 'prefetch';
-      link.href = `/story/${slug}/${nextChapter.slug}`;
+    if (nextChapter && slug) {
+      const link = document.createElement("link");
+      link.rel = "prefetch";
+      link.href = `/story/${slug}/${nextChapter.id}`;
       document.head.appendChild(link);
-      
-      return () => {
-        document.head.removeChild(link);
-      };
+      return () => document.head.removeChild(link);
     }
   }, [nextChapter, slug]);
 
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <p className="text-muted-foreground">Loading chapter…</p>
+      </div>
+    );
+  }
+
+  if (!chapter) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-4">Chapter Not Found</h1>
+          <Link to="/"><Button>Back to Home</Button></Link>
+        </div>
+      </div>
+    );
+  }
+
+  const wordCount = (chapter.content ?? "").split(/\s+/).filter(Boolean).length;
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Fixed Navigation Header */}
+      {/* Top nav */}
       <div className="sticky top-0 z-50 bg-card/95 backdrop-blur border-b border-border">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-14">
-            {/* Left Navigation */}
+            {/* Left */}
             <div className="flex items-center space-x-2">
-              <Link to="/">
-                <Button variant="ghost" size="sm">
-                  <Home className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link to={`/story/${slug}`}>
-                <Button variant="ghost" size="sm">
-                  <List className="h-4 w-4 mr-2" />
-                  Chapters
-                </Button>
-              </Link>
+              <Link to="/"><Button variant="ghost" size="sm"><Home className="h-4 w-4" /></Button></Link>
+              <Link to={`/story/${slug}`}><Button variant="ghost" size="sm"><List className="h-4 w-4 mr-2" />Chapters</Button></Link>
             </div>
 
-            {/* Chapter Info */}
+            {/* Center */}
             <div className="flex-1 text-center px-4">
-              <h1 className="font-semibold text-foreground truncate">
-                {chapter.title}
-              </h1>
-              <p className="text-sm text-muted-foreground truncate">
-                {story.title}
-              </p>
+              <h1 className="font-semibold text-foreground truncate">{chapter.title}</h1>
+              <p className="text-sm text-muted-foreground truncate">{storyMeta?.title ?? ""}</p>
             </div>
 
-            {/* Right Controls */}
+            {/* Right */}
             <div className="flex items-center space-x-2">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={handleBookmark}
-                className={isBookmarked ? 'text-primary' : ''}
+                className={isBookmarked ? "text-primary" : ""}
+                aria-label="Bookmark"
               >
                 {isBookmarked ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
               </Button>
-              
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <Settings className="h-4 w-4" />
-                  </Button>
+                  <Button variant="ghost" size="sm"><Settings className="h-4 w-4" /></Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem onClick={toggleDarkMode}>
-                    {preferences.darkMode ? (
-                      <>
-                        <Sun className="h-4 w-4 mr-2" />
-                        Light Mode
-                      </>
-                    ) : (
-                      <>
-                        <Moon className="h-4 w-4 mr-2" />
-                        Dark Mode
-                      </>
-                    )}
+                    {preferences.darkMode ? (<><Sun className="h-4 w-4 mr-2" />Light Mode</>) : (<><Moon className="h-4 w-4 mr-2" />Dark Mode</>)}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => adjustFontSize(-1)}>
-                    <Minus className="h-4 w-4 mr-2" />
-                    Smaller Font
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => adjustFontSize(1)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Larger Font
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => adjustFontSize(-1)}><Minus className="h-4 w-4 mr-2" />Smaller Font</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => adjustFontSize(1)}><Plus className="h-4 w-4 mr-2" />Larger Font</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <div className="px-2 py-1 text-sm text-muted-foreground">
-                    Font Size: {preferences.fontSize}px
-                  </div>
+                  <div className="px-2 py-1 text-sm text-muted-foreground">Font Size: {preferences.fontSize}px</div>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -214,93 +205,78 @@ export function ChapterReader() {
         </div>
       </div>
 
-      {/* Chapter Navigation */}
+      {/* Chapter nav */}
       <div className="bg-muted/30 border-b border-border">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               {previousChapter ? (
-                <Link to={`/story/${slug}/${previousChapter.slug}`}>
+                <Link to={`/story/${slug}/${previousChapter.id}`}>
                   <Button variant="outline" size="sm" className="flex items-center space-x-2">
-                    <ChevronLeft className="h-4 w-4" />
-                    <span className="hidden sm:inline">Previous</span>
+                    <ChevronLeft className="h-4 w-4" /><span className="hidden sm:inline">Previous</span>
                   </Button>
                 </Link>
               ) : (
-                <Button variant="outline" size="sm" disabled>
-                  <ChevronLeft className="h-4 w-4" />
-                  <span className="hidden sm:inline">Previous</span>
-                </Button>
+                <Button variant="outline" size="sm" disabled><ChevronLeft className="h-4 w-4" /><span className="hidden sm:inline">Previous</span></Button>
               )}
             </div>
 
             <div className="text-center">
               <span className="text-sm text-muted-foreground">
-                Chapter {chapter.number} of {story.chapters.length}
+                Chapter {currentIndex + 1} of {chapters.length}
               </span>
             </div>
 
             <div className="flex items-center space-x-4">
               {nextChapter ? (
-                <Link to={`/story/${slug}/${nextChapter.slug}`}>
+                <Link to={`/story/${slug}/${nextChapter.id}`}>
                   <Button variant="outline" size="sm" className="flex items-center space-x-2">
-                    <span className="hidden sm:inline">Next</span>
-                    <ChevronRight className="h-4 w-4" />
+                    <span className="hidden sm:inline">Next</span><ChevronRight className="h-4 w-4" />
                   </Button>
                 </Link>
               ) : (
-                <Button variant="outline" size="sm" disabled>
-                  <span className="hidden sm:inline">Next</span>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+                <Button variant="outline" size="sm" disabled><span className="hidden sm:inline">Next</span><ChevronRight className="h-4 w-4" /></Button>
               )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Chapter Content */}
+      {/* Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-3">
             <Card>
               <CardContent className="p-8">
                 <header className="mb-8">
-                  <h1 className="text-3xl font-bold text-foreground mb-2">
-                    {chapter.title}
-                  </h1>
+                  <h1 className="text-3xl font-bold text-foreground mb-2">{chapter.title}</h1>
                   <div className="flex items-center space-x-4 text-muted-foreground text-sm">
-                    <span>Chapter {chapter.number}</span>
+                    <span>Chapter {currentIndex + 1}</span>
                     <span>•</span>
-                    <span>{chapter.wordCount.toLocaleString()} words</span>
+                    <span>{wordCount.toLocaleString()} words</span>
                     <span>•</span>
-                    <span>{new Date(chapter.publishedAt).toLocaleDateString()}</span>
+                    <span>{chapter.created_at ? new Date(chapter.created_at).toLocaleDateString() : "-"}</span>
                   </div>
                 </header>
 
                 <Separator className="mb-8" />
 
-                <div 
+                <div
                   ref={contentRef}
                   className="prose prose-lg max-w-none text-foreground"
-                  style={{ 
-                    fontSize: `${preferences.fontSize}px`,
-                    lineHeight: 1.7,
-                  }}
+                  style={{ fontSize: `${preferences.fontSize}px`, lineHeight: 1.7 }}
                 >
-                  {chapter.content.split('\n').map((paragraph, index) => (
-                    <p key={index} className="mb-6 text-justify">
-                      {paragraph}
-                    </p>
+                  {(chapter.content ?? "").split("\n").map((p, i) => (
+                    <p key={i} className="mb-6 text-justify">{p}</p>
                   ))}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Bottom Navigation */}
+            {/* Bottom nav */}
             <div className="mt-8 flex items-center justify-between">
               {previousChapter ? (
-                <Link to={`/story/${slug}/${previousChapter.slug}`}>
+                <Link to={`/story/${slug}/${previousChapter.id}`}>
                   <Button className="flex items-center space-x-2">
                     <ChevronLeft className="h-4 w-4" />
                     <div className="text-left">
@@ -309,12 +285,10 @@ export function ChapterReader() {
                     </div>
                   </Button>
                 </Link>
-              ) : (
-                <div></div>
-              )}
+              ) : <div />}
 
               {nextChapter ? (
-                <Link to={`/story/${slug}/${nextChapter.slug}`}>
+                <Link to={`/story/${slug}/${nextChapter.id}`}>
                   <Button className="flex items-center space-x-2">
                     <div className="text-right">
                       <div className="text-sm opacity-75">Next</div>
@@ -323,19 +297,23 @@ export function ChapterReader() {
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </Link>
-              ) : (
-                <div></div>
-              )}
+              ) : <div />}
             </div>
 
-            {/* Suggested Stories */}
-            {recommendedStories.length > 0 && (
+            {/* Suggested */}
+            {recommended.length > 0 && (
               <Card className="mt-8">
                 <CardContent className="p-6">
                   <h3 className="text-xl font-bold text-foreground mb-4">You May Also Like</h3>
                   <div className="grid grid-cols-1 gap-4">
-                    {recommendedStories.map((story) => (
-                      <StoryCard key={story.id} story={story} variant="compact" />
+                    {recommended.map((s) => (
+                      // @ts-ignore StoryCard mock; đủ field render
+                      <StoryCard key={s.id} story={{
+                        id: s.id, title: s.title, author: s.author ?? "",
+                        description: s.description ?? "", coverImage: s.coverimage ?? "",
+                        slug: s.slug, rating: s.rating ?? 0, views: s.views ?? 0,
+                        status: s.status ?? "Ongoing", genres: [], lastUpdated: s.lastupdated ?? new Date().toISOString(), chapters: []
+                      }} variant="compact" />
                     ))}
                   </div>
                 </CardContent>
@@ -345,45 +323,39 @@ export function ChapterReader() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Story Info */}
             <Card>
               <CardContent className="p-6">
                 <Link to={`/story/${slug}`} className="block hover:opacity-80 transition-opacity">
                   <img
-                    src={story.coverImage}
-                    alt={story.title}
+                    src={storyMeta?.coverimage || "https://placehold.co/600x300?text=Story"}
+                    alt={storyMeta?.title || ""}
                     className="w-full h-40 object-cover rounded mb-4"
                   />
-                  <h3 className="font-bold text-foreground mb-1">{story.title}</h3>
-                  <p className="text-sm text-muted-foreground">{story.author}</p>
+                  <h3 className="font-bold text-foreground mb-1">{storyMeta?.title ?? ""}</h3>
                 </Link>
               </CardContent>
             </Card>
 
-            {/* Chapter Navigation */}
             <Card>
               <CardContent className="p-6">
                 <h4 className="font-semibold text-foreground mb-4">Navigation</h4>
                 <div className="space-y-2">
                   <Link to={`/story/${slug}`}>
                     <Button variant="outline" className="w-full justify-start">
-                      <List className="h-4 w-4 mr-2" />
-                      All Chapters
+                      <List className="h-4 w-4 mr-2" />All Chapters
                     </Button>
                   </Link>
                   {previousChapter && (
-                    <Link to={`/story/${slug}/${previousChapter.slug}`}>
+                    <Link to={`/story/${slug}/${previousChapter.id}`}>
                       <Button variant="outline" className="w-full justify-start">
-                        <ChevronLeft className="h-4 w-4 mr-2" />
-                        Previous Chapter
+                        <ChevronLeft className="h-4 w-4 mr-2" />Previous Chapter
                       </Button>
                     </Link>
                   )}
                   {nextChapter && (
-                    <Link to={`/story/${slug}/${nextChapter.slug}`}>
+                    <Link to={`/story/${slug}/${nextChapter.id}`}>
                       <Button variant="outline" className="w-full justify-start">
-                        <ChevronRight className="h-4 w-4 mr-2" />
-                        Next Chapter
+                        <ChevronRight className="h-4 w-4 mr-2" />Next Chapter
                       </Button>
                     </Link>
                   )}
@@ -391,7 +363,6 @@ export function ChapterReader() {
               </CardContent>
             </Card>
 
-            {/* Reading Settings */}
             <Card>
               <CardContent className="p-6">
                 <h4 className="font-semibold text-foreground mb-4">Reading Settings</h4>
@@ -399,13 +370,9 @@ export function ChapterReader() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Font Size</span>
                     <div className="flex items-center space-x-2">
-                      <Button size="sm" variant="outline" onClick={() => adjustFontSize(-1)}>
-                        <Minus className="h-3 w-3" />
-                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => adjustFontSize(-1)}><Minus className="h-3 w-3" /></Button>
                       <span className="text-sm w-8 text-center">{preferences.fontSize}</span>
-                      <Button size="sm" variant="outline" onClick={() => adjustFontSize(1)}>
-                        <Plus className="h-3 w-3" />
-                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => adjustFontSize(1)}><Plus className="h-3 w-3" /></Button>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
@@ -414,14 +381,9 @@ export function ChapterReader() {
                       {preferences.darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                     </Button>
                   </div>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={handleBookmark}
-                  >
+                  <Button size="sm" variant="outline" className="w-full" onClick={handleBookmark}>
                     {isBookmarked ? <BookmarkCheck className="h-4 w-4 mr-2" /> : <Bookmark className="h-4 w-4 mr-2" />}
-                    {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+                    {isBookmarked ? "Bookmarked" : "Bookmark"}
                   </Button>
                 </div>
               </CardContent>
