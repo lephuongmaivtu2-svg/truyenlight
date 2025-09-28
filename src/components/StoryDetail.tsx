@@ -7,7 +7,6 @@ import {
   User,
   BookOpen,
   Play,
-  List,
   CheckCircle,
 } from "lucide-react";
 import { Button } from "./ui/button";
@@ -23,6 +22,7 @@ import {
   StoryRow,
 } from "../lib/api";
 
+// convert genres -> array
 function toArrayGenres(genres: StoryWithChapters["genres"]): string[] {
   if (Array.isArray(genres)) return genres;
   if (typeof genres === "string") {
@@ -43,6 +43,7 @@ export function StoryDetail() {
   const [recommended, setRecommended] = useState<StoryRow[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // load story + chapters
   useEffect(() => {
     let alive = true;
     async function run() {
@@ -171,26 +172,34 @@ export function StoryDetail() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Eye className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-semibold">{formatViews(story.views)}</span>
+                    <span className="font-semibold">
+                      {formatViews(story.views)}
+                    </span>
                     <span className="text-muted-foreground text-sm">Views</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <BookOpen className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-semibold">{story.chapters.length}</span>
+                    <span className="font-semibold">
+                      {story.chapters.length}
+                    </span>
                     <span className="text-muted-foreground text-sm">
                       Chapters
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-semibold">{formatDate(lastUpdated)}</span>
+                    <span className="font-semibold">
+                      {formatDate(lastUpdated)}
+                    </span>
                   </div>
                 </div>
 
                 {/* Status */}
                 <div className="flex items-center space-x-2">
                   <Badge
-                    variant={story.status === "Completed" ? "default" : "secondary"}
+                    variant={
+                      story.status === "Completed" ? "default" : "secondary"
+                    }
                     className="flex items-center space-x-1"
                   >
                     {story.status === "Completed" && (
@@ -204,7 +213,7 @@ export function StoryDetail() {
                 <div className="flex flex-wrap gap-3 pt-4">
                   {story.chapters.length > 0 && (
                     <>
-                      {/* ✅ Đọc từ chương đầu */}
+                      {/* Đọc từ chương đầu */}
                       <Link
                         to={`/story/${story.slug}/${
                           story.chapters[0].slug || story.chapters[0].id
@@ -216,7 +225,7 @@ export function StoryDetail() {
                         </Button>
                       </Link>
 
-                      {/* ✅ Tiếp tục đọc */}
+                      {/* Tiếp tục đọc */}
                       {bookmark && (
                         <Link to={`/story/${story.slug}/${bookmark.chapterSlug}`}>
                           <Button
@@ -247,7 +256,7 @@ export function StoryDetail() {
               </CardContent>
             </Card>
 
-            {/* ✅ Chapter list */}
+            {/* Chapter list */}
             {story.chapters.length > 0 && (
               <Card className="mt-8">
                 <CardHeader>
@@ -266,10 +275,6 @@ export function StoryDetail() {
                 <CardContent>
                   <div className="space-y-2 max-h-96 overflow-y-auto">
                     {story.chapters.map((chapter, index) => {
-                      const wordCount = (chapter.content ?? "")
-                        .split(/\s+/)
-                        .filter(Boolean).length;
-
                       return (
                         <div key={chapter.id}>
                           <Link
@@ -287,15 +292,14 @@ export function StoryDetail() {
                                   {chapter.title}
                                 </h4>
                                 <p className="text-sm text-muted-foreground">
-                                  {wordCount.toLocaleString()} words
+                                  {(chapter.word_count ?? 0).toLocaleString()}{" "}
+                                  words
                                 </p>
                               </div>
                             </div>
                             <div className="text-sm text-muted-foreground">
                               {chapter.created_at
-                                ? new Date(
-                                    chapter.created_at
-                                  ).toLocaleDateString()
+                                ? new Date(chapter.created_at).toLocaleDateString()
                                 : "-"}
                             </div>
                           </Link>
@@ -311,7 +315,6 @@ export function StoryDetail() {
 
           {/* SIDEBAR */}
           <div className="space-y-6">
-            {/* Recommended */}
             {recommended.length > 0 && (
               <Card>
                 <CardHeader>
