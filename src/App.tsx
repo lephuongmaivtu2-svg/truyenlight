@@ -7,6 +7,11 @@ import { StoryDetail } from './components/StoryDetail';
 import { ChapterReader } from './components/ChapterReader';
 import { ReadingProvider } from './components/ReadingProvider';
 
+// 👇 import thêm
+import { ProfilePage } from './pages/ProfilePage';
+import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
+
 export default function App() {
   return (
     <ReadingProvider>
@@ -18,6 +23,11 @@ export default function App() {
               <Route path="/" element={<Homepage />} />
               <Route path="/story/:slug" element={<StoryDetail />} />
               <Route path="/story/:slug/:chapterSlug" element={<ChapterReader />} />
+
+              {/* 👇 bổ sung các route mới */}
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
             </Routes>
           </main>
           <Footer />
