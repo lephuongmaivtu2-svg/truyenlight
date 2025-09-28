@@ -21,6 +21,10 @@ export type ChapterRow = {
   title: string;
   content: string;
   created_at: string | null;
+  slug: string | null;        // thêm
+  number: number | null;      // thêm
+  word_count: number | null;  // thêm
+  published_at: string | null;// thêm
 };
 
 export type StoryWithChapters = StoryRow & {
