@@ -66,16 +66,16 @@ export function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-foreground hover:text-primary transition-colors">
-              Home
+              Trang chủ
             </Link>
             <a href="#genres" className="text-foreground hover:text-primary transition-colors">
-              Genres
+              Thể loại
             </a>
             <a href="#search" className="text-foreground hover:text-primary transition-colors">
-              Search
+              Tìm kiếm
             </a>
             <a href="#contact" className="text-foreground hover:text-primary transition-colors">
-              Contact
+              Liên hệ
             </a>
           </nav>
 
@@ -84,7 +84,7 @@ export function Header() {
             <form onSubmit={handleSearchSubmit} className="relative">
               <Input
                 type="text"
-                placeholder="Search stories..."
+                placeholder="VD: Thiếu niên hoa hồng..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="w-64 pl-10"
@@ -148,7 +148,7 @@ export function Header() {
                 <Link to="/login">
                   <Button variant="ghost" size="sm">
                     <User className="h-4 w-4 mr-2" />
-                    Login
+                    Đăng nhập
                   </Button>
                 </Link>
                 <Link to="/register">
@@ -224,11 +224,11 @@ export function Header() {
                   <Link to="/login" className="flex-1">
                     <Button variant="ghost" size="sm" className="w-full">
                       <User className="h-4 w-4 mr-2" />
-                      Login
+                      Đăng nhập
                     </Button>
                   </Link>
                   <Link to="/register" className="flex-1">
-                    <Button size="sm" className="w-full">Register</Button>
+                    <Button size="sm" className="w-full">Đăng ký</Button>
                   </Link>
                 </>
               )}
