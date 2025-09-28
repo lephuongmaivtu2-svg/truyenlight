@@ -1,4 +1,5 @@
 import { supabase } from "../supabaseClient";
+import { v4 as uuidv4 } from "uuid"; // nhớ cài: npm install uuid
 
 // ================== Types ==================
 export type StoryRow = {
@@ -31,6 +32,17 @@ export type ChapterRow = {
 export type StoryWithChapters = StoryRow & {
   chapters: ChapterRow[];
 };
+
+// ================== Helpers ==================
+function slugify(str: string) {
+  return str
+    .normalize("NFD") // bỏ dấu
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+}
 
 // ================== API ==================
 
@@ -114,7 +126,7 @@ export async function fetchChapterById(storyId: string, chapterId: string): Prom
   return data;
 }
 
-// Fetch single chapter by SLUG ✅
+// Fetch single chapter by SLUG
 export async function fetchChapterBySlug(storyId: string, chapterSlug: string): Promise<ChapterRow | null> {
   const { data, error } = await supabase
     .from("chapters")
@@ -128,4 +140,33 @@ export async function fetchChapterBySlug(storyId: string, chapterSlug: string): 
     return null;
   }
   return data;
+}
+
+// ================== Insert Chapter ==================
+export async function createChapter(storyId: string, title: string, content: string, number?: number) {
+  const uuid = uuidv4();
+  const safeSlug = `${slugify(title)}-${uuid}`;
+  const wordCount = content.split(/\s+/).filter(Boolean).length;
+
+  const { data, error } = await supabase
+    .from("chapters")
+    .insert([
+      {
+        story_id: storyId,
+        title,
+        content,
+        slug: safeSlug,
+        number: number ?? null,
+        word_count: wordCount,
+        published_at: new Date().toISOString(),
+      },
+    ])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("❌ createChapter.error:", error);
+    return null;
+  }
+  return data as ChapterRow;
 }
