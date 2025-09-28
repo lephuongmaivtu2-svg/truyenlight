@@ -25,7 +25,7 @@ import {
 } from "./ui/dropdown-menu";
 import { useReading } from "./ReadingProvider";
 import {
-  fetchChapterBySlug,
+  fetchChapterById,
   fetchChaptersOfStory,
   fetchStoryIdBySlug,
   fetchTopStories,
@@ -39,6 +39,9 @@ export function ChapterReader() {
   const contentRef = useRef<HTMLDivElement>(null);
   const { preferences, updatePreferences, addBookmark, getBookmark } = useReading();
 
+  // 👇 tách uuid từ cuối slug
+  const chapterId = chapterSlug?.split("-").pop();
+
   const [storyId, setStoryId] = useState<string | null>(null);
   const [storyMeta, setStoryMeta] = useState<Pick<StoryRow, "title" | "coverimage" | "slug"> | null>(null);
   const [chapters, setChapters] = useState<ChapterRow[]>([]);
@@ -50,7 +53,7 @@ export function ChapterReader() {
   useEffect(() => {
     let alive = true;
     async function run() {
-      if (!slug || !chapterSlug) return;
+      if (!slug || !chapterId) return;
       setLoading(true);
 
       const sId = await fetchStoryIdBySlug(slug);
@@ -62,15 +65,17 @@ export function ChapterReader() {
 
       setStoryId(sId);
 
+      // lấy toàn bộ chapters của story
       const list = await fetchChaptersOfStory(sId);
       if (!alive) return;
       setChapters(list);
 
-      const chap = await fetchChapterBySlug(sId, chapterSlug);
+      // fetch chapter theo uuid
+      const chap = await fetchChapterById(sId, chapterId);
       if (!alive) return;
       setChapter(chap);
 
-      // lấy meta
+      // lấy meta + gợi ý
       const rec = await fetchTopStories(3);
       if (alive) setRecommended(rec);
       setStoryMeta({ title: rec[0]?.title ?? "", coverimage: rec[0]?.coverimage ?? "", slug });
@@ -81,7 +86,7 @@ export function ChapterReader() {
     return () => {
       alive = false;
     };
-  }, [slug, chapterSlug]);
+  }, [slug, chapterId]);
 
   // bookmark icon state
   const isBookmarked = useMemo(() => {
@@ -112,10 +117,10 @@ export function ChapterReader() {
     }
   }, [slug, chapterSlug, getBookmark]);
 
-  // fix chỗ này → dùng slug thay vì id
+  // tìm index chapter theo id
   const currentIndex = useMemo(
-    () => chapters.findIndex((c) => c.slug === chapterSlug),
-    [chapters, chapterSlug]
+    () => chapters.findIndex((c) => c.id === chapterId),
+    [chapters, chapterId]
   );
   const previousChapter = currentIndex > 0 ? chapters[currentIndex - 1] : null;
   const nextChapter = currentIndex >= 0 && currentIndex < chapters.length - 1 ? chapters[currentIndex + 1] : null;
@@ -166,9 +171,7 @@ export function ChapterReader() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* ... Giữ nguyên phần UI ... */}
-
-      {/* Chỗ navigation đổi id → slug */}
+      {/* giữ nguyên UI */}
       <div className="bg-muted/30 border-b border-border">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -205,8 +208,7 @@ export function ChapterReader() {
         </div>
       </div>
 
-      {/* ... Giữ nguyên phần content, sidebar, suggested stories ... */}
-
+      {/* content giữ nguyên */}
     </div>
   );
 }
