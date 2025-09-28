@@ -1,5 +1,5 @@
 import { supabase } from "../supabaseClient";
-import { v4 as uuidv4 } from "uuid"; 
+import { v4 as uuidv4 } from "uuid"; // để tạo id random cho slug
 
 // ================== Types ==================
 export type StoryRow = {
@@ -34,14 +34,20 @@ export type StoryWithChapters = StoryRow & {
 };
 
 // ================== Helpers ==================
-function slugify(str: string) {
-  return str
-    .normalize("NFD") // bỏ dấu
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-");
+
+// gen slug từ title + random id ngắn
+export function generateSlug(title: string): string {
+  return (
+    title
+      .toLowerCase()
+      .normalize("NFD") // bỏ dấu tiếng Việt
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s-]/g, "")
+      .trim()
+      .replace(/\s+/g, "-") +
+    "-" +
+    uuidv4().slice(0, 8)
+  );
 }
 
 // ================== API ==================
@@ -142,31 +148,25 @@ export async function fetchChapterBySlug(storyId: string, chapterSlug: string): 
   return data;
 }
 
-// ================== Insert Chapter ==================
-export async function createChapter(storyId: string, title: string, content: string, number?: number) {
-  const uuid = uuidv4();
-  const safeSlug = `${slugify(title)}-${uuid}`;
-  const wordCount = content.split(/\s+/).filter(Boolean).length;
+// Insert new chapter (auto gen slug + word_count + published_at)
+export async function insertChapter(storyId: string, title: string, content: string) {
+  const slug = generateSlug(title);
 
-  const { data, error } = await supabase
-    .from("chapters")
-    .insert([
-      {
-        story_id: storyId,
-        title,
-        content,
-        slug: safeSlug,
-        number: number ?? null,
-        word_count: wordCount,
-        published_at: new Date().toISOString(),
-      },
-    ])
-    .select()
-    .single();
+  const { data, error } = await supabase.from("chapters").insert([
+    {
+      story_id: storyId,
+      title,
+      content,
+      slug,
+      number: null,
+      word_count: content.split(/\s+/).filter(Boolean).length,
+      published_at: new Date().toISOString(),
+    },
+  ]).select().single();
 
   if (error) {
-    console.error("❌ createChapter.error:", error);
+    console.error("❌ insertChapter.error:", error);
     return null;
   }
-  return data as ChapterRow;
+  return data;
 }
