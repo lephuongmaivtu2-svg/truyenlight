@@ -40,21 +40,21 @@ export function ProfilePage() {
   }, [userId]);
 
   if (loading) {
-    return <div className="container mx-auto px-4 py-8">Loading profile…</div>;
+    return <div className="container mx-auto px-4 py-8">Đang tải nè, đợi xíu nha…</div>;
   }
 
   if (!userId) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
         <p className="mb-4">Bạn cần đăng nhập để xem trang cá nhân.</p>
-        <Link to="/login"><Button>Login</Button></Link>
+        <Link to="/login"><Button>Đăng nhập</Button></Link>
       </div>
     );
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">My Profile</h1>
+      <h1 className="text-3xl font-bold mb-6">Trang cá nhân</h1>
 
       {/* Reading progress */}
       <div className="mb-8">
@@ -79,9 +79,9 @@ export function ProfilePage() {
 
       {/* Bookmarks */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Bookmark</h2>
+        <h2 className="text-xl font-semibold mb-4">Đánh dấu</h2>
         {bookmarks.length === 0 ? (
-          <p className="text-muted-foreground">Chưa có bookmark nào.</p>
+          <p className="text-muted-foreground">Chưa có truyện nào được đánh dấu.</p>
         ) : (
           <ul className="space-y-2">
             {bookmarks.map((b) => (
@@ -90,7 +90,7 @@ export function ProfilePage() {
                   Story ID: {b.story_id} – Chapter ID: {b.chapter_id}
                 </span>
                 <Link to={`/story/${b.story_id}/${b.chapter_id}`}>
-                  <Button size="sm">Read</Button>
+                  <Button size="sm">Đọc</Button>
                 </Link>
               </li>
             ))}
