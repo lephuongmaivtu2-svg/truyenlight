@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "./ui/button";
@@ -11,7 +11,7 @@ import {
 
 export function ChapterReader() {
   const { slug, chapterSlug } = useParams<{ slug: string; chapterSlug: string }>();
-  const { preferences, updatePreferences, addBookmark, getBookmark } = useReading();
+  const { addBookmark, getBookmark, preferences, updatePreferences } = useReading();
 
   const [story, setStory] = useState<StoryWithChapters | null>(null);
   const [chapter, setChapter] = useState<ChapterRow | null>(null);
@@ -95,21 +95,30 @@ export function ChapterReader() {
       {/* Header nav */}
       <div className="bg-muted/30 border-b border-border">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          {/* Prev */}
           {previousChapter ? (
             <Link to={`/story/${slug}/${previousChapter.slug || previousChapter.id}`}>
               <Button variant="outline" size="sm"><ChevronLeft className="h-4 w-4" /> Prev</Button>
             </Link>
-          ) : <Button variant="outline" size="sm" disabled><ChevronLeft className="h-4 w-4" /> Prev</Button>}
+          ) : (
+            <Button variant="outline" size="sm" disabled><ChevronLeft className="h-4 w-4" /> Prev</Button>
+          )}
 
-          <span className="text-sm text-muted-foreground">
-            Chapter {currentIndex + 1} of {chapters.length}
-          </span>
+          {/* Về trang truyện */}
+          <Link to={`/story/${slug}`}>
+            <Button variant="ghost" size="sm" className="mx-2">
+              Về trang truyện
+            </Button>
+          </Link>
 
+          {/* Next */}
           {nextChapter ? (
             <Link to={`/story/${slug}/${nextChapter.slug || nextChapter.id}`}>
               <Button variant="outline" size="sm">Next <ChevronRight className="h-4 w-4" /></Button>
             </Link>
-          ) : <Button variant="outline" size="sm" disabled>Next <ChevronRight className="h-4 w-4" /></Button>}
+          ) : (
+            <Button variant="outline" size="sm" disabled>Next <ChevronRight className="h-4 w-4" /></Button>
+          )}
         </div>
       </div>
 
@@ -118,6 +127,15 @@ export function ChapterReader() {
         <h1 className="text-2xl font-bold mb-4">{chapter.title}</h1>
         <p className="text-sm text-muted-foreground mb-6">{wordCount} words</p>
         <div dangerouslySetInnerHTML={{ __html: chapter.content ?? "" }} />
+      </div>
+
+      {/* Footer nav */}
+      <div className="container mx-auto px-4 py-8 text-center">
+        <Link to={`/story/${slug}`}>
+          <Button size="lg" variant="secondary">
+            ← Quay về trang truyện
+          </Button>
+        </Link>
       </div>
     </div>
   );
