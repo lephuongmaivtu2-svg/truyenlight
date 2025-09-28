@@ -150,7 +150,7 @@ export function StoryDetail() {
                 <div className="flex flex-wrap gap-3 pt-4">
                   {story.chapters.length > 0 && (
                     <>
-                      <Link to={`/story/${story.slug}/${story.chapters[0].id}`}>
+                     <Link to={`/story/${story.slug}/${chapter.slug || chapter.id}`}>
                         <Button size="lg" className="flex items-center space-x-2">
                           <Play className="h-4 w-4" />
                           <span>Read from Beginning</span>
