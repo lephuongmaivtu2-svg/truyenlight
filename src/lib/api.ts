@@ -32,6 +32,24 @@ export type StoryWithChapters = StoryRow & {
   chapters: ChapterRow[];
 };
 
+// Progress + Bookmark types
+export type ReadingProgress = {
+  id: string;
+  user_id: string;
+  story_id: string;
+  chapter_id: string;
+  scroll_position: number;
+  updated_at: string;
+};
+
+export type Bookmark = {
+  id: string;
+  user_id: string;
+  story_id: string;
+  chapter_id: string;
+  created_at: string;
+};
+
 // ================== Helper ==================
 function slugify(text: string): string {
   return text
@@ -163,4 +181,81 @@ export async function createChapterWithSlug(
     return null;
   }
   return data;
+}
+
+// ================== Reading Progress ==================
+export async function getReadingProgress(userId: string): Promise<ReadingProgress[]> {
+  const { data, error } = await supabase
+    .from("reading_progress")
+    .select("*")
+    .eq("user_id", userId)
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    console.error("❌ getReadingProgress.error:", error);
+    return [];
+  }
+  return data || [];
+}
+
+export async function updateReadingProgress(
+  userId: string,
+  storyId: string,
+  chapterId: string,
+  scrollPosition: number
+): Promise<void> {
+  const { error } = await supabase
+    .from("reading_progress")
+    .upsert({
+      user_id: userId,
+      story_id: storyId,
+      chapter_id: chapterId,
+      scroll_position: scrollPosition,
+      updated_at: new Date().toISOString()
+    }, { onConflict: "user_id,story_id" });
+
+  if (error) {
+    console.error("❌ updateReadingProgress.error:", error);
+  }
+}
+
+// ================== Bookmarks ==================
+export async function getBookmarks(userId: string): Promise<Bookmark[]> {
+  const { data, error } = await supabase
+    .from("bookmarks")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("❌ getBookmarks.error:", error);
+    return [];
+  }
+  return data || [];
+}
+
+export async function addBookmark(userId: string, storyId: string, chapterId: string): Promise<void> {
+  const { error } = await supabase
+    .from("bookmarks")
+    .insert([{
+      user_id: userId,
+      story_id: storyId,
+      chapter_id: chapterId
+    }]);
+
+  if (error) {
+    console.error("❌ addBookmark.error:", error);
+  }
+}
+
+export async function removeBookmark(userId: string, chapterId: string): Promise<void> {
+  const { error } = await supabase
+    .from("bookmarks")
+    .delete()
+    .eq("user_id", userId)
+    .eq("chapter_id", chapterId);
+
+  if (error) {
+    console.error("❌ removeBookmark.error:", error);
+  }
 }
