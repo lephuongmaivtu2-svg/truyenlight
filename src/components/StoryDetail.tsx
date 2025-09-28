@@ -212,7 +212,7 @@ export function StoryDetail() {
                       >
                         <Button size="lg" className="flex items-center space-x-2">
                           <Play className="h-4 w-4" />
-                          <span>Read from Beginning</span>
+                          <span>Đọc từ đầu</span>
                         </Button>
                       </Link>
 
@@ -242,7 +242,7 @@ export function StoryDetail() {
                             className="flex items-center space-x-2"
                           >
                             <BookOpen className="h-4 w-4" />
-                            <span>Continue Reading</span>
+                            <span>Tiếp tục đọc</span>
                           </Button>
                         </Link>
                       )}
@@ -255,7 +255,7 @@ export function StoryDetail() {
             {/* Synopsis */}
             <Card className="mt-8">
               <CardHeader>
-                <CardTitle>Synopsis</CardTitle>
+                <CardTitle>Văn án</CardTitle>
               </CardHeader>
               <CardContent>
                 <p>{story.description ?? "No description"}</p>
