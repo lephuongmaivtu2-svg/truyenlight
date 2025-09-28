@@ -21,10 +21,10 @@ export type ChapterRow = {
   title: string;
   content: string;
   created_at: string | null;
-  slug: string | null;        // thêm
-  number: number | null;      // thêm
-  word_count: number | null;  // thêm
-  published_at: string | null;// thêm
+  slug: string | null;        // thêm slug để đọc chapter qua URL
+  number: number | null;      // thứ tự chương
+  word_count: number | null;  // số từ
+  published_at: string | null;// ngày publish
 };
 
 export type StoryWithChapters = StoryRow & {
@@ -48,7 +48,7 @@ export async function fetchStoryWithChapters(slug: string): Promise<StoryWithCha
     .from("chapters")
     .select("*")
     .eq("story_id", story.id)
-    .order("created_at", { ascending: true });
+    .order("number", { ascending: true }); // ưu tiên order theo number
 
   if (chapterError) {
     console.error("❌ fetchStoryWithChapters.chapterError:", chapterError);
@@ -86,7 +86,7 @@ export async function fetchChaptersOfStory(storyId: string): Promise<ChapterRow[
     .from("chapters")
     .select("*")
     .eq("story_id", storyId)
-    .order("created_at", { ascending: true });
+    .order("number", { ascending: true });
 
   if (error) {
     console.error("❌ fetchChaptersOfStory.error:", error);
@@ -95,7 +95,7 @@ export async function fetchChaptersOfStory(storyId: string): Promise<ChapterRow[
   return data || [];
 }
 
-// 🔹 Fetch single chapter
+// 🔹 Fetch single chapter by ID
 export async function fetchChapterById(storyId: string, chapterId: string): Promise<ChapterRow | null> {
   const { data, error } = await supabase
     .from("chapters")
@@ -106,6 +106,22 @@ export async function fetchChapterById(storyId: string, chapterId: string): Prom
 
   if (error) {
     console.error("❌ fetchChapterById.error:", error);
+    return null;
+  }
+  return data;
+}
+
+// 🔹 Fetch single chapter by Slug
+export async function fetchChapterBySlug(storyId: string, chapterSlug: string): Promise<ChapterRow | null> {
+  const { data, error } = await supabase
+    .from("chapters")
+    .select("*")
+    .eq("story_id", storyId)
+    .eq("slug", chapterSlug)  // 👈 lấy chapter theo slug
+    .single();
+
+  if (error) {
+    console.error("❌ fetchChapterBySlug.error:", error);
     return null;
   }
   return data;
