@@ -141,13 +141,23 @@ export function ChapterReader() {
 </div>
 
 
-      {/* Footer nav */}
-      <div className="container mx-auto px-4 py-8 text-center">
-        <Link to={`/story/${slug}`}>
-          <Button size="lg" variant="secondary">
-            ← Quay về trang truyện
-          </Button>
-        </Link>
+     {/* Footer nav (Prev/Next) */}
+      <div className="container mx-auto px-4 py-8 flex items-center justify-between">
+        {previousChapter ? (
+          <Link to={`/story/${slug}/${previousChapter.slug || previousChapter.id}`}>
+            <Button variant="outline" size="sm"><ChevronLeft className="h-4 w-4" /> Trước</Button>
+          </Link>
+        ) : (
+          <Button variant="outline" size="sm" disabled><ChevronLeft className="h-4 w-4" /> Trước</Button>
+        )}
+      
+        {nextChapter ? (
+          <Link to={`/story/${slug}/${nextChapter.slug || nextChapter.id}`}>
+            <Button variant="outline" size="sm">Sau <ChevronRight className="h-4 w-4" /></Button>
+          </Link>
+        ) : (
+          <Button variant="outline" size="sm" disabled>Sau <ChevronRight className="h-4 w-4" /></Button>
+        )}
       </div>
     </div>
   );
