@@ -115,7 +115,7 @@ export function Homepage() {
             <section>
               <div className="flex items-center space-x-2 mb-6">
                 <Clock className="h-6 w-6 text-primary" />
-                <h2 className="text-2xl font-bold">Latest Updates</h2>
+                <h2 className="text-2xl font-bold">Truyện nóng hổi vừa thổi vừa ăn</h2>
               </div>
               <div className="grid grid-cols-1 gap-4">
                 {stories.slice(0, 5).map((story) => (
@@ -129,7 +129,7 @@ export function Homepage() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>All Stories</CardTitle>
+                <CardTitle>Toàn bộ truyện</CardTitle>
               </CardHeader>
               <CardContent>
                 {stories.slice(0, 5).map((story) => (
