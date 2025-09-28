@@ -60,7 +60,7 @@ export function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <BookOpen className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold text-foreground">NovelHub</span>
+            <span className="text-xl font-bold text-foreground">TruyenLight</span>
           </Link>
 
           {/* Desktop Navigation */}
