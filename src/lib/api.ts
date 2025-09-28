@@ -7,13 +7,13 @@ export type StoryRow = {
   title: string;
   author: string | null;
   description: string | null;
-  coverimage: string | null;
+  coverImage: string | null;
   genres: string[] | string | null;
   rating: number | null;
   views: number | null;
   status: string | null;
   created_at: string | null;
-  lastupdated: string | null;
+  lastUpdated: string | null;
 };
 
 export type ChapterRow = {
