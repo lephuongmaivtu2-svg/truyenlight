@@ -55,13 +55,13 @@ export function Homepage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section with Search */}
-      <section className="bg-gradient-to-r from-primary/10 to-primary/5 py-16">
+      <section className="bg-gradient-to-r from-primary/10 to-primary/5 py-12">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
-            Discover Amazing Stories
+            Có truyện sớm nhất
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Dive into thousands of light novels, web novels, and fantasy stories from talented authors around the world.
+             Đăng ký tài khoản để đánh dấu truyện đang đọc dang dở
           </p>
 
           <form onSubmit={handleSearch} className="max-w-2xl mx-auto relative">
