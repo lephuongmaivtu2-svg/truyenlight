@@ -1,7 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
-  Star, Eye, Clock, User, BookOpen, Play, CheckCircle,
+  Star,
+  Eye,
+  Clock,
+  User,
+  BookOpen,
+  Play,
+  CheckCircle,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -80,27 +86,37 @@ export function StoryDetail() {
           <p className="text-muted-foreground mb-6">
             The story you're looking for doesn't exist.
           </p>
-          <Link to="/"><Button>Back to Home</Button></Link>
+          <Link to="/">
+            <Button>Back to Home</Button>
+          </Link>
         </div>
       </div>
     );
   }
 
   const genres = toArrayGenres(story.genres);
-  const chapters = story.chapters ?? []; // đảm bảo luôn là array
+  const chapters = story.chapters ?? [];
 
   const formatViews = (v: number | null) =>
-    !v ? "0"
-    : v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M`
-    : v >= 1000 ? `${(v / 1000).toFixed(0)}K`
-    : String(v);
+    !v
+      ? "0"
+      : v >= 1_000_000
+      ? `${(v / 1_000_000).toFixed(1)}M`
+      : v >= 1000
+      ? `${(v / 1000).toFixed(0)}K`
+      : String(v);
 
   const formatDate = (d?: string | null) =>
     d
-      ? new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+      ? new Date(d).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
       : "-";
 
-  const lastUpdated = story.lastupdated || chapters.at(-1)?.created_at || story.created_at;
+  const lastUpdated =
+    story.lastupdated || chapters.at(-1)?.created_at || story.created_at;
 
   return (
     <div className="min-h-screen bg-background">
@@ -112,21 +128,30 @@ export function StoryDetail() {
             <div className="flex flex-col md:flex-row gap-6">
               <div className="flex-shrink-0">
                 <img
-                  src={story.coverimage || "https://placehold.co/300x400?text=No+Image"}
+                  src={
+                    story.coverimage ||
+                    "https://placehold.co/300x400?text=No+Image"
+                  }
                   alt={story.title}
                   className="w-full md:w-64 h-80 object-cover rounded-lg shadow-lg"
                 />
               </div>
 
               <div className="flex-1 space-y-4">
-                <h1 className="text-3xl md:text-4xl font-bold mb-2">{story.title}</h1>
+                <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                  {story.title}
+                </h1>
                 <div className="flex items-center space-x-2 text-muted-foreground mb-4">
                   <User className="h-4 w-4" />
                   <span>by {story.author ?? "Unknown"}</span>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {genres.map((g) => <Badge key={g} variant="secondary">{g}</Badge>)}
+                  {genres.map((g) => (
+                    <Badge key={g} variant="secondary">
+                      {g}
+                    </Badge>
+                  ))}
                 </div>
 
                 {/* Stats */}
@@ -134,73 +159,107 @@ export function StoryDetail() {
                   <div className="flex items-center space-x-2">
                     <Star className="h-4 w-4 text-yellow-500 fill-current" />
                     <span className="font-semibold">{story.rating ?? 0}</span>
-                    <span className="text-sm text-muted-foreground">Rating</span>
+                    <span className="text-sm text-muted-foreground">
+                      Rating
+                    </span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Eye className="h-4 w-4" />
-                    <span className="font-semibold">{formatViews(story.views)}</span>
+                    <span className="font-semibold">
+                      {formatViews(story.views)}
+                    </span>
                     <span className="text-sm text-muted-foreground">Views</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <BookOpen className="h-4 w-4" />
                     <span className="font-semibold">{chapters.length}</span>
-                    <span className="text-sm text-muted-foreground">Chapters</span>
+                    <span className="text-sm text-muted-foreground">
+                      Chapters
+                    </span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Clock className="h-4 w-4" />
-                    <span className="font-semibold">{formatDate(lastUpdated)}</span>
+                    <span className="font-semibold">
+                      {formatDate(lastUpdated)}
+                    </span>
                   </div>
                 </div>
 
                 {/* Status */}
                 <div className="flex items-center space-x-2">
                   <Badge
-                    variant={story.status === "Completed" ? "default" : "secondary"}
+                    variant={
+                      story.status === "Completed" ? "default" : "secondary"
+                    }
                     className="flex items-center space-x-1"
                   >
-                    {story.status === "Completed" && <CheckCircle className="h-3 w-3" />}
+                    {story.status === "Completed" && (
+                      <CheckCircle className="h-3 w-3" />
+                    )}
                     <span>{story.status ?? "Ongoing"}</span>
                   </Badge>
                 </div>
 
-              {/* Actions */}
-<div className="flex flex-wrap gap-3 pt-4">
-  {chapters.length > 0 && (
-    <>
-      {/* Đọc từ chương đầu */}
-      <Link to={`/story/${story.slug}/${chapters[0].slug || chapters[0].id}`}>
-        <Button size="lg" className="flex items-center space-x-2">
-          <Play className="h-4 w-4" />
-          <span>Read from Beginning</span>
-        </Button>
-      </Link>
+                {/* Actions */}
+                <div className="flex flex-wrap gap-3 pt-4">
+                  {chapters.length > 0 && (
+                    <>
+                      {/* Đọc từ chương đầu */}
+                      <Link
+                        to={`/story/${story.slug}/${
+                          chapters[0].slug || chapters[0].id
+                        }`}
+                      >
+                        <Button size="lg" className="flex items-center space-x-2">
+                          <Play className="h-4 w-4" />
+                          <span>Read from Beginning</span>
+                        </Button>
+                      </Link>
 
-      {/* Đọc chương mới nhất */}
-      <Link to={`/story/${story.slug}/${chapters[chapters.length - 1].slug || chapters[chapters.length - 1].id}`}>
-        <Button variant="outline" size="lg" className="flex items-center space-x-2">
-          <BookOpen className="h-4 w-4" />
-          <span>Read Newest</span>
-        </Button>
-      </Link>
+                      {/* Đọc chương mới nhất */}
+                      <Link
+                        to={`/story/${story.slug}/${
+                          chapters[chapters.length - 1].slug ||
+                          chapters[chapters.length - 1].id
+                        }`}
+                      >
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          className="flex items-center space-x-2"
+                        >
+                          <BookOpen className="h-4 w-4" />
+                          <span>Read Newest</span>
+                        </Button>
+                      </Link>
 
-      {/* Tiếp tục đọc (bookmark) */}
-      {bookmark && (
-        <Link to={`/story/${story.slug}/${bookmark.chapterSlug}`}>
-          <Button variant="outline" size="lg" className="flex items-center space-x-2">
-            <BookOpen className="h-4 w-4" />
-            <span>Continue Reading</span>
-          </Button>
-        </Link>
-      )}
-    </>
-  )}
-</div>
-
+                      {/* Tiếp tục đọc (bookmark) */}
+                      {bookmark && (
+                        <Link to={`/story/${story.slug}/${bookmark.chapterSlug}`}>
+                          <Button
+                            variant="outline"
+                            size="lg"
+                            className="flex items-center space-x-2"
+                          >
+                            <BookOpen className="h-4 w-4" />
+                            <span>Continue Reading</span>
+                          </Button>
+                        </Link>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
 
             {/* Synopsis */}
             <Card className="mt-8">
-              <CardHeader><CardTitle>Synopsis</CardTitle></CardHeader>
-              <CardContent><p>{story.description ?? "No description"}</p></CardContent>
+              <CardHeader>
+                <CardTitle>Synopsis</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>{story.description ?? "No description"}</p>
+              </CardContent>
             </Card>
 
             {/* Chapter List */}
@@ -210,7 +269,12 @@ export function StoryDetail() {
                   <CardTitle className="flex justify-between">
                     <span>Chapters ({chapters.length})</span>
                     <span className="text-sm text-muted-foreground">
-                      Latest: {chapters.at(-1)?.created_at ? new Date(chapters.at(-1)!.created_at!).toLocaleDateString() : "-"}
+                      Latest:{" "}
+                      {chapters.at(-1)?.created_at
+                        ? new Date(
+                            chapters.at(-1)!.created_at!
+                          ).toLocaleDateString()
+                        : "-"}
                     </span>
                   </CardTitle>
                 </CardHeader>
@@ -219,7 +283,9 @@ export function StoryDetail() {
                     {chapters.map((chapter, index) => (
                       <div key={chapter.id}>
                         <Link
-                          to={`/story/${story.slug}/${chapter.slug || chapter.id}`}
+                          to={`/story/${story.slug}/${
+                            chapter.slug || chapter.id
+                          }`}
                           className="flex items-center justify-between p-3 hover:bg-muted rounded-lg"
                         >
                           <div className="flex items-center space-x-3">
@@ -229,12 +295,17 @@ export function StoryDetail() {
                             <div>
                               <h4 className="font-medium">{chapter.title}</h4>
                               <p className="text-sm text-muted-foreground">
-                                {(chapter.word_count ?? 0).toLocaleString()} words
+                                {(chapter.word_count ?? 0).toLocaleString()}{" "}
+                                words
                               </p>
                             </div>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {chapter.created_at ? new Date(chapter.created_at).toLocaleDateString() : "-"}
+                            {chapter.created_at
+                              ? new Date(
+                                  chapter.created_at
+                                ).toLocaleDateString()
+                              : "-"}
                           </div>
                         </Link>
                         {index < chapters.length - 1 && <Separator />}
@@ -250,7 +321,9 @@ export function StoryDetail() {
           <div className="space-y-6">
             {recommended.length > 0 && (
               <Card>
-                <CardHeader><CardTitle className="text-lg">You May Also Like</CardTitle></CardHeader>
+                <CardHeader>
+                  <CardTitle className="text-lg">You May Also Like</CardTitle>
+                </CardHeader>
                 <CardContent className="space-y-4">
                   {recommended.map((s) => (
                     <StoryCard
