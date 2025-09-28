@@ -303,13 +303,13 @@ export function StoryDetail() {
                             <span className="w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center text-sm font-medium">
                               {index + 1}
                             </span>
-                            <div>
-                              <h4 className="font-medium">{chapter.title}</h4>
-                              <p className="text-sm text-muted-foreground">
-                                {(chapter.word_count ?? 0).toLocaleString()}{" "}
-                                words
-                              </p>
-                            </div>
+                          <div>
+                            <h4 className="font-medium">{chapter.title}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {(chapter.views ?? 0).toLocaleString()} views
+                            </p>
+                          </div>
+
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {chapter.created_at
