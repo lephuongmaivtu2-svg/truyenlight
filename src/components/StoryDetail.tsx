@@ -258,9 +258,20 @@ export function StoryDetail() {
                 <CardTitle>Văn án</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>{story.description ?? "No description"}</p>
+                <div className="space-y-4">
+                  {(story.description ?? "No description")
+                    .split("\n")
+                    .map((line, idx) =>
+                      line.trim() ? (
+                        <p key={idx}>{line}</p>
+                      ) : (
+                        <br key={idx} />
+                      )
+                    )}
+                </div>
               </CardContent>
             </Card>
+
 
             {/* Chapter List */}
             {chapters.length > 0 && (
