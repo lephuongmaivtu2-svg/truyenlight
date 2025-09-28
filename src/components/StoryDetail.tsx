@@ -1,6 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Star, Eye, Clock, User, BookOpen, Play, List, CheckCircle } from "lucide-react";
+import {
+  Star,
+  Eye,
+  Clock,
+  User,
+  BookOpen,
+  Play,
+  List,
+  CheckCircle,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
@@ -17,8 +26,11 @@ import {
 function toArrayGenres(genres: StoryWithChapters["genres"]): string[] {
   if (Array.isArray(genres)) return genres;
   if (typeof genres === "string") {
-    // fallback khi DB trả string kiểu {Fantasy,Romance}
-    return genres.replace(/[{}"]/g, "").split(",").map(s => s.trim()).filter(Boolean);
+    return genres
+      .replace(/[{}"]/g, "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
   }
   return [];
 }
@@ -36,12 +48,15 @@ export function StoryDetail() {
     async function run() {
       if (!slug) return;
       setLoading(true);
+
       const s = await fetchStoryWithChapters(slug);
       if (alive) setStory(s);
+
       if (s) {
         const rec = await fetchTopStories(4, s.id);
         if (alive) setRecommended(rec);
       }
+
       setLoading(false);
     }
     run();
@@ -50,7 +65,10 @@ export function StoryDetail() {
     };
   }, [slug]);
 
-  const bookmark = useMemo(() => (slug ? getBookmark(slug) : null), [slug, getBookmark]);
+  const bookmark = useMemo(
+    () => (slug ? getBookmark(slug) : null),
+    [slug, getBookmark]
+  );
 
   if (loading) {
     return (
@@ -64,18 +82,43 @@ export function StoryDetail() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Story Not Found</h1>
-          <p className="text-muted-foreground mb-6">The story you're looking for doesn't exist.</p>
-          <Link to="/"><Button>Back to Home</Button></Link>
+          <h1 className="text-2xl font-bold text-foreground mb-4">
+            Story Not Found
+          </h1>
+          <p className="text-muted-foreground mb-6">
+            The story you're looking for doesn't exist.
+          </p>
+          <Link to="/">
+            <Button>Back to Home</Button>
+          </Link>
         </div>
       </div>
     );
   }
 
   const genres = toArrayGenres(story.genres);
-  const formatViews = (v: number | null) => !v ? "0" : v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(0)}K` : String(v);
-  const formatDate = (d?: string | null) => d ? new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "-";
-  const lastUpdated = story.lastupdated || story.chapters.at(-1)?.created_at || story.created_at || null;
+  const formatViews = (v: number | null) =>
+    !v
+      ? "0"
+      : v >= 1_000_000
+      ? `${(v / 1_000_000).toFixed(1)}M`
+      : v >= 1000
+      ? `${(v / 1000).toFixed(0)}K`
+      : String(v);
+  const formatDate = (d?: string | null) =>
+    d
+      ? new Date(d).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      : "-";
+
+  const lastUpdated =
+    story.lastupdated ||
+    story.chapters.at(-1)?.created_at ||
+    story.created_at ||
+    null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -87,7 +130,10 @@ export function StoryDetail() {
               {/* Cover */}
               <div className="flex-shrink-0">
                 <img
-                  src={story.coverimage || "https://placehold.co/300x400?text=No+Image"}
+                  src={
+                    story.coverimage ||
+                    "https://placehold.co/300x400?text=No+Image"
+                  }
                   alt={story.title}
                   className="w-full md:w-64 h-80 object-cover rounded-lg shadow-lg"
                 />
@@ -108,7 +154,9 @@ export function StoryDetail() {
                 {/* Genres */}
                 <div className="flex flex-wrap gap-2">
                   {genres.map((g) => (
-                    <Badge key={g} variant="secondary">{g}</Badge>
+                    <Badge key={g} variant="secondary">
+                      {g}
+                    </Badge>
                   ))}
                 </div>
 
@@ -117,7 +165,9 @@ export function StoryDetail() {
                   <div className="flex items-center space-x-2">
                     <Star className="h-4 w-4 text-yellow-500 fill-current" />
                     <span className="font-semibold">{story.rating ?? 0}</span>
-                    <span className="text-muted-foreground text-sm">Rating</span>
+                    <span className="text-muted-foreground text-sm">
+                      Rating
+                    </span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Eye className="h-4 w-4 text-muted-foreground" />
@@ -127,7 +177,9 @@ export function StoryDetail() {
                   <div className="flex items-center space-x-2">
                     <BookOpen className="h-4 w-4 text-muted-foreground" />
                     <span className="font-semibold">{story.chapters.length}</span>
-                    <span className="text-muted-foreground text-sm">Chapters</span>
+                    <span className="text-muted-foreground text-sm">
+                      Chapters
+                    </span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Clock className="h-4 w-4 text-muted-foreground" />
@@ -141,7 +193,9 @@ export function StoryDetail() {
                     variant={story.status === "Completed" ? "default" : "secondary"}
                     className="flex items-center space-x-1"
                   >
-                    {story.status === "Completed" && <CheckCircle className="h-3 w-3" />}
+                    {story.status === "Completed" && (
+                      <CheckCircle className="h-3 w-3" />
+                    )}
                     <span>{story.status ?? "Ongoing"}</span>
                   </Badge>
                 </div>
@@ -150,26 +204,31 @@ export function StoryDetail() {
                 <div className="flex flex-wrap gap-3 pt-4">
                   {story.chapters.length > 0 && (
                     <>
-                     <Link to={`/story/${story.slug}/${chapter.slug || chapter.id}`}>
+                      {/* ✅ Đọc từ chương đầu */}
+                      <Link
+                        to={`/story/${story.slug}/${
+                          story.chapters[0].slug || story.chapters[0].id
+                        }`}
+                      >
                         <Button size="lg" className="flex items-center space-x-2">
                           <Play className="h-4 w-4" />
                           <span>Read from Beginning</span>
                         </Button>
                       </Link>
 
+                      {/* ✅ Tiếp tục đọc */}
                       {bookmark && (
                         <Link to={`/story/${story.slug}/${bookmark.chapterSlug}`}>
-                          <Button variant="outline" size="lg" className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="lg"
+                            className="flex items-center space-x-2"
+                          >
                             <BookOpen className="h-4 w-4" />
                             <span>Continue Reading</span>
                           </Button>
                         </Link>
                       )}
-
-                      <Button variant="outline" size="lg" className="flex items-center space-x-2">
-                        <List className="h-4 w-4" />
-                        <span>Chapter List</span>
-                      </Button>
                     </>
                   )}
                 </div>
@@ -178,7 +237,9 @@ export function StoryDetail() {
 
             {/* Description */}
             <Card className="mt-8">
-              <CardHeader><CardTitle>Synopsis</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle>Synopsis</CardTitle>
+              </CardHeader>
               <CardContent>
                 <p className="text-foreground leading-relaxed whitespace-pre-line">
                   {story.description ?? "No description"}
@@ -186,40 +247,56 @@ export function StoryDetail() {
               </CardContent>
             </Card>
 
-            {/* Chapter list */}
+            {/* ✅ Chapter list */}
             {story.chapters.length > 0 && (
               <Card className="mt-8">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>Chapters ({story.chapters.length})</span>
                     <span className="text-sm text-muted-foreground">
-                      Latest: {story.chapters.at(-1)?.created_at ? new Date(story.chapters.at(-1)!.created_at!).toLocaleDateString() : "-"}
+                      Latest:{" "}
+                      {story.chapters.at(-1)?.created_at
+                        ? new Date(
+                            story.chapters.at(-1)!.created_at!
+                          ).toLocaleDateString()
+                        : "-"}
                     </span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 max-h-96 overflow-y-auto">
                     {story.chapters.map((chapter, index) => {
-                      const wordCount = (chapter.content ?? "").split(/\s+/).filter(Boolean).length;
+                      const wordCount = (chapter.content ?? "")
+                        .split(/\s+/)
+                        .filter(Boolean).length;
+
                       return (
                         <div key={chapter.id}>
                           <Link
-                              to={`/story/${story.slug}/${chapter.slug ? `${chapter.slug}-${chapter.id}` : chapter.id}`}
-                              className="flex items-center justify-between p-3 hover:bg-muted rounded-lg transition-colors"
-                            >
+                            to={`/story/${story.slug}/${
+                              chapter.slug || chapter.id
+                            }`}
+                            className="flex items-center justify-between p-3 hover:bg-muted rounded-lg transition-colors"
+                          >
                             <div className="flex items-center space-x-3">
                               <span className="flex-shrink-0 w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center text-sm font-medium">
                                 {index + 1}
                               </span>
                               <div>
-                                <h4 className="font-medium text-foreground">{chapter.title}</h4>
+                                <h4 className="font-medium text-foreground">
+                                  {chapter.title}
+                                </h4>
                                 <p className="text-sm text-muted-foreground">
                                   {wordCount.toLocaleString()} words
                                 </p>
                               </div>
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              {chapter.created_at ? new Date(chapter.created_at).toLocaleDateString() : "-"}
+                              {chapter.created_at
+                                ? new Date(
+                                    chapter.created_at
+                                  ).toLocaleDateString()
+                                : "-"}
                             </div>
                           </Link>
                           {index < story.chapters.length - 1 && <Separator />}
@@ -234,50 +311,33 @@ export function StoryDetail() {
 
           {/* SIDEBAR */}
           <div className="space-y-6">
-            {/* Statistics */}
-            <Card>
-              <CardHeader><CardTitle className="text-lg">Statistics</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Total Views</span>
-                  <span className="font-semibold">{(story.views ?? 0).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Rating</span>
-                  <span className="font-semibold">{story.rating ?? 0}/5.0</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Chapters</span>
-                  <span className="font-semibold">{story.chapters.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Status</span>
-                  <span className="font-semibold">{story.status ?? "Ongoing"}</span>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Recommended */}
             {recommended.length > 0 && (
               <Card>
-                <CardHeader><CardTitle className="text-lg">You May Also Like</CardTitle></CardHeader>
+                <CardHeader>
+                  <CardTitle className="text-lg">You May Also Like</CardTitle>
+                </CardHeader>
                 <CardContent className="space-y-4">
                   {recommended.map((s) => (
-                    // @ts-ignore: StoryCard expects mock Story but chỉ cần title/author/coverimage/slug oke
-                    <StoryCard key={s.id} story={{
-                      id: s.id,
-                      title: s.title,
-                      author: s.author ?? "",
-                      description: s.description ?? "",
-                      coverImage: s.coverimage ?? "",
-                      slug: s.slug,
-                      rating: s.rating ?? 0,
-                      views: s.views ?? 0,
-                      status: s.status ?? "Ongoing",
-                      genres: toArrayGenres(s.genres),
-                      lastUpdated: s.lastupdated ?? new Date().toISOString(),
-                      chapters: []
-                    }} variant="compact" />
+                    <StoryCard
+                      key={s.id}
+                      story={{
+                        id: s.id,
+                        title: s.title,
+                        author: s.author ?? "",
+                        description: s.description ?? "",
+                        coverImage: s.coverimage ?? "",
+                        slug: s.slug,
+                        rating: s.rating ?? 0,
+                        views: s.views ?? 0,
+                        status: s.status ?? "Ongoing",
+                        genres: toArrayGenres(s.genres),
+                        lastUpdated:
+                          s.lastupdated ?? new Date().toISOString(),
+                        chapters: [],
+                      }}
+                      variant="compact"
+                    />
                   ))}
                 </CardContent>
               </Card>
