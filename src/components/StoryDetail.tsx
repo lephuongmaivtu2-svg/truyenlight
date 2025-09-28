@@ -129,7 +129,7 @@ export function StoryDetail() {
               <div className="flex-shrink-0">
                 <img
                   src={
-                    story.coverimage ||
+                    story.coverImage ||
                     "https://placehold.co/300x400?text=No+Image"
                   }
                   alt={story.title}
