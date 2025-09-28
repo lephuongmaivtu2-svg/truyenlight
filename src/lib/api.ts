@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient";
+import { supabase } from "../supabaseClient";
 
 export type StoryRow = {
   id: string;
