@@ -1,5 +1,5 @@
 import { supabase } from "../supabaseClient";
-import { v4 as uuidv4 } from "uuid"; // nhớ cài: npm install uuid
+import { v4 as uuidv4 } from "uuid"; 
 
 // ================== Types ==================
 export type StoryRow = {
