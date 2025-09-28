@@ -44,30 +44,23 @@ function slugify(text: string): string {
 
 // ================== API ==================
 
-// Fetch story + chapters
+// Fetch story + chapters (dùng join)
 export async function fetchStoryWithChapters(slug: string): Promise<StoryWithChapters | null> {
-  const { data: story, error: storyError } = await supabase
+  const { data, error } = await supabase
     .from("stories")
-    .select("*")
+    .select(`
+      *,
+      chapters (*)
+    `)
     .eq("slug", slug)
     .single();
 
-  if (storyError || !story) {
-    console.error("❌ fetchStoryWithChapters.storyError:", storyError);
+  if (error || !data) {
+    console.error("❌ fetchStoryWithChapters.error:", error);
     return null;
   }
 
-  const { data: chapters, error: chapterError } = await supabase
-    .from("chapters")
-    .select("*")
-    .eq("story_id", story.id)
-    .order("created_at", { ascending: true });
-
-  if (chapterError) {
-    console.error("❌ fetchStoryWithChapters.chapterError:", chapterError);
-  }
-
-  return { ...story, chapters: chapters || [] };
+  return { ...data, chapters: data.chapters || [] };
 }
 
 // Fetch top stories
