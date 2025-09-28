@@ -1,5 +1,4 @@
 import { supabase } from "../supabaseClient";
-import { v4 as uuidv4 } from "uuid"; // để tạo id random cho slug
 
 // ================== Types ==================
 export type StoryRow = {
@@ -33,21 +32,14 @@ export type StoryWithChapters = StoryRow & {
   chapters: ChapterRow[];
 };
 
-// ================== Helpers ==================
-
-// gen slug từ title + random id ngắn
-export function generateSlug(title: string): string {
-  return (
-    title
-      .toLowerCase()
-      .normalize("NFD") // bỏ dấu tiếng Việt
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9\s-]/g, "")
-      .trim()
-      .replace(/\s+/g, "-") +
-    "-" +
-    uuidv4().slice(0, 8)
-  );
+// ================== Helper ==================
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD") // bỏ dấu tiếng Việt
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 // ================== API ==================
@@ -148,24 +140,33 @@ export async function fetchChapterBySlug(storyId: string, chapterSlug: string): 
   return data;
 }
 
-// Insert new chapter (auto gen slug + word_count + published_at)
-export async function insertChapter(storyId: string, title: string, content: string) {
-  const slug = generateSlug(title);
+// ================== Insert ==================
+// Tạo chapter mới với auto-slug
+export async function createChapterWithSlug(
+  storyId: string,
+  title: string,
+  content: string
+): Promise<ChapterRow | null> {
+  const slug = slugify(title);
+  const wordCount = content ? content.split(/\s+/).filter(Boolean).length : 0;
 
-  const { data, error } = await supabase.from("chapters").insert([
-    {
+  const { data, error } = await supabase
+    .from("chapters")
+    .insert([{
       story_id: storyId,
       title,
       content,
       slug,
       number: null,
-      word_count: content.split(/\s+/).filter(Boolean).length,
-      published_at: new Date().toISOString(),
-    },
-  ]).select().single();
+      word_count: wordCount,
+      created_at: new Date().toISOString(),
+      published_at: new Date().toISOString()
+    }])
+    .select()
+    .single();
 
   if (error) {
-    console.error("❌ insertChapter.error:", error);
+    console.error("❌ createChapterWithSlug.error:", error);
     return null;
   }
   return data;
