@@ -344,7 +344,7 @@ export function StoryDetail() {
                         title: s.title,
                         author: s.author ?? "",
                         description: s.description ?? "",
-                        coverImage: s.coverimage ?? "",
+                        coverImage: s.coverImage ?? "",
                         slug: s.slug,
                         rating: s.rating ?? 0,
                         views: s.views ?? 0,
