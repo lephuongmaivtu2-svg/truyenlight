@@ -27,7 +27,7 @@ export function LoginPage() {
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-md">
-      <h1 className="text-2xl font-bold mb-6">Login</h1>
+      <h1 className="text-2xl font-bold mb-6">Đăng nhập</h1>
       <form onSubmit={handleLogin} className="space-y-4">
         <input
           type="email"
@@ -46,7 +46,7 @@ export function LoginPage() {
           required
         />
         {errorMsg && <p className="text-red-500 text-sm">{errorMsg}</p>}
-        <Button type="submit" className="w-full">Login</Button>
+        <Button type="submit" className="w-full">Đăng nhập</Button>
       </form>
 
       <p className="text-sm mt-4 text-center">
