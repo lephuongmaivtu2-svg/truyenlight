@@ -204,9 +204,9 @@ export function StoryDetail() {
                       return (
                         <div key={chapter.id}>
                           <Link
-                            to={`/story/${story.slug}/${chapter.id}`}
-                            className="flex items-center justify-between p-3 hover:bg-muted rounded-lg transition-colors"
-                          >
+                              to={`/story/${story.slug}/${chapter.slug ? `${chapter.slug}-${chapter.id}` : chapter.id}`}
+                              className="flex items-center justify-between p-3 hover:bg-muted rounded-lg transition-colors"
+                            >
                             <div className="flex items-center space-x-3">
                               <span className="flex-shrink-0 w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center text-sm font-medium">
                                 {index + 1}
