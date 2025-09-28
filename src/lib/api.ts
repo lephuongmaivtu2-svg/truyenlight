@@ -27,7 +27,7 @@ export type StoryWithChapters = StoryRow & {
   chapters: ChapterRow[];
 };
 
-// Fetch story + chapters
+// 🔹 Fetch story + chapters
 export async function fetchStoryWithChapters(slug: string): Promise<StoryWithChapters | null> {
   const { data: story, error: storyError } = await supabase
     .from("stories")
@@ -36,7 +36,7 @@ export async function fetchStoryWithChapters(slug: string): Promise<StoryWithCha
     .single();
 
   if (storyError || !story) {
-    console.error(storyError);
+    console.error("❌ fetchStoryWithChapters.storyError:", storyError);
     return null;
   }
 
@@ -46,48 +46,52 @@ export async function fetchStoryWithChapters(slug: string): Promise<StoryWithCha
     .eq("story_id", story.id)
     .order("created_at", { ascending: true });
 
-  if (chapterError) console.error(chapterError);
+  if (chapterError) {
+    console.error("❌ fetchStoryWithChapters.chapterError:", chapterError);
+  }
 
   return { ...story, chapters: chapters || [] };
 }
 
-// Fetch top stories
+// 🔹 Fetch top stories (recommendation)
 export async function fetchTopStories(limit = 5, excludeId?: string): Promise<StoryRow[]> {
   let query = supabase.from("stories").select("*").order("views", { ascending: false }).limit(limit);
   if (excludeId) query = query.neq("id", excludeId);
+
   const { data, error } = await query;
   if (error) {
-    console.error(error);
+    console.error("❌ fetchTopStories.error:", error);
     return [];
   }
   return data || [];
 }
 
-// Fetch storyId by slug
+// 🔹 Fetch storyId by slug
 export async function fetchStoryIdBySlug(slug: string): Promise<string | null> {
   const { data, error } = await supabase.from("stories").select("id").eq("slug", slug).single();
   if (error) {
-    console.error(error);
+    console.error("❌ fetchStoryIdBySlug.error:", error);
     return null;
   }
   return data?.id ?? null;
 }
 
-// Fetch chapters of story
+// 🔹 Fetch chapters of story
 export async function fetchChaptersOfStory(storyId: string): Promise<ChapterRow[]> {
   const { data, error } = await supabase
     .from("chapters")
     .select("*")
     .eq("story_id", storyId)
     .order("created_at", { ascending: true });
+
   if (error) {
-    console.error(error);
+    console.error("❌ fetchChaptersOfStory.error:", error);
     return [];
   }
   return data || [];
 }
 
-// Fetch single chapter
+// 🔹 Fetch single chapter
 export async function fetchChapterById(storyId: string, chapterId: string): Promise<ChapterRow | null> {
   const { data, error } = await supabase
     .from("chapters")
@@ -95,8 +99,9 @@ export async function fetchChapterById(storyId: string, chapterId: string): Prom
     .eq("story_id", storyId)
     .eq("id", chapterId)
     .single();
+
   if (error) {
-    console.error(error);
+    console.error("❌ fetchChapterById.error:", error);
     return null;
   }
   return data;
