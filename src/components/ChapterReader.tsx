@@ -98,10 +98,10 @@ export function ChapterReader() {
           {/* Prev */}
           {previousChapter ? (
             <Link to={`/story/${slug}/${previousChapter.slug || previousChapter.id}`}>
-              <Button variant="outline" size="sm"><ChevronLeft className="h-4 w-4" /> Prev</Button>
+              <Button variant="outline" size="sm"><ChevronLeft className="h-4 w-4" /> Trước</Button>
             </Link>
           ) : (
-            <Button variant="outline" size="sm" disabled><ChevronLeft className="h-4 w-4" /> Prev</Button>
+            <Button variant="outline" size="sm" disabled><ChevronLeft className="h-4 w-4" /> Trước</Button>
           )}
 
           {/* Về trang truyện */}
@@ -114,10 +114,10 @@ export function ChapterReader() {
           {/* Next */}
           {nextChapter ? (
             <Link to={`/story/${slug}/${nextChapter.slug || nextChapter.id}`}>
-              <Button variant="outline" size="sm">Next <ChevronRight className="h-4 w-4" /></Button>
+              <Button variant="outline" size="sm">Sau <ChevronRight className="h-4 w-4" /></Button>
             </Link>
           ) : (
-            <Button variant="outline" size="sm" disabled>Next <ChevronRight className="h-4 w-4" /></Button>
+            <Button variant="outline" size="sm" disabled>Trước <ChevronRight className="h-4 w-4" /></Button>
           )}
         </div>
       </div>
