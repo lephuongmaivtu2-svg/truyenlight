@@ -123,11 +123,23 @@ export function ChapterReader() {
       </div>
 
       {/* Chapter content */}
-      <div className="container mx-auto px-4 py-8 prose max-w-3xl">
-        <h1 className="text-2xl font-bold mb-4">{chapter.title}</h1>
-        <p className="text-sm text-muted-foreground mb-6">{wordCount} words</p>
-        <div dangerouslySetInnerHTML={{ __html: chapter.content ?? "" }} />
-      </div>
+<div className="container mx-auto px-4 py-8 prose max-w-3xl">
+  <h1 className="text-2xl font-bold mb-4">{chapter.title}</h1>
+  <p className="text-sm text-muted-foreground mb-6">{wordCount} words</p>
+  
+  <div className="space-y-4">
+    {(chapter.content ?? "")
+      .split("\n") // tách theo dòng
+      .map((line, idx) =>
+        line.trim() ? (
+          <p key={idx}>{line}</p> // nếu có chữ thì render thành đoạn <p>
+        ) : (
+          <br key={idx} /> // nếu dòng trống thì giữ <br />
+        )
+      )}
+  </div>
+</div>
+
 
       {/* Footer nav */}
       <div className="container mx-auto px-4 py-8 text-center">
