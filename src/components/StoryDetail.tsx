@@ -163,24 +163,39 @@ export function StoryDetail() {
                   </Badge>
                 </div>
 
-                {/* Actions */}
-                <div className="flex flex-wrap gap-3 pt-4">
-                  {chapters.length > 0 && (
-                    <>
-                      <Link to={`/story/${story.slug}/${chapters[0].slug || chapters[0].id}`}>
-                        <Button size="lg"><Play className="h-4 w-4" /><span>Read from Beginning</span></Button>
-                      </Link>
+              {/* Actions */}
+<div className="flex flex-wrap gap-3 pt-4">
+  {chapters.length > 0 && (
+    <>
+      {/* Đọc từ chương đầu */}
+      <Link to={`/story/${story.slug}/${chapters[0].slug || chapters[0].id}`}>
+        <Button size="lg" className="flex items-center space-x-2">
+          <Play className="h-4 w-4" />
+          <span>Read from Beginning</span>
+        </Button>
+      </Link>
 
-                      {bookmark && (
-                        <Link to={`/story/${story.slug}/${bookmark.chapterSlug}`}>
-                          <Button variant="outline" size="lg"><BookOpen className="h-4 w-4" /><span>Continue Reading</span></Button>
-                        </Link>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
+      {/* Đọc chương mới nhất */}
+      <Link to={`/story/${story.slug}/${chapters[chapters.length - 1].slug || chapters[chapters.length - 1].id}`}>
+        <Button variant="outline" size="lg" className="flex items-center space-x-2">
+          <BookOpen className="h-4 w-4" />
+          <span>Read Newest</span>
+        </Button>
+      </Link>
+
+      {/* Tiếp tục đọc (bookmark) */}
+      {bookmark && (
+        <Link to={`/story/${story.slug}/${bookmark.chapterSlug}`}>
+          <Button variant="outline" size="lg" className="flex items-center space-x-2">
+            <BookOpen className="h-4 w-4" />
+            <span>Continue Reading</span>
+          </Button>
+        </Link>
+      )}
+    </>
+  )}
+</div>
+
 
             {/* Synopsis */}
             <Card className="mt-8">
