@@ -30,7 +30,7 @@ export function RegisterPage() {
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-md">
-      <h1 className="text-2xl font-bold mb-6">Register</h1>
+      <h1 className="text-2xl font-bold mb-6">Đăng ký</h1>
       <form onSubmit={handleRegister} className="space-y-4">
         <input
           type="email"
@@ -50,7 +50,7 @@ export function RegisterPage() {
         />
         {errorMsg && <p className="text-red-500 text-sm">{errorMsg}</p>}
         {successMsg && <p className="text-green-500 text-sm">{successMsg}</p>}
-        <Button type="submit" className="w-full">Register</Button>
+        <Button type="submit" className="w-full">Đăng ký</Button>
       </form>
 
       <p className="text-sm mt-4 text-center">
