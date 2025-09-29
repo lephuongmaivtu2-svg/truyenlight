@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { StoryCard } from "./StoryCard";
 import { supabase } from "../supabaseClient";
+import { getTopStoriesByViews,  } from "../supabaseClient";
 
 export function Homepage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -13,7 +14,8 @@ export function Homepage() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [featuredStories, setFeaturedStories] = useState<any[]>([]);
-  const topStories = getTopStoriesByViews();
+  const [topStories, setTopStories] = useState<any[]>([]);
+
   
   // Fetch tất cả stories
  useEffect(() => {
@@ -36,7 +38,12 @@ export function Homepage() {
       setStories(mapped);
     }
   };
-
+ const fetchTop = async () => {
+    const stories = await getTopStoriesByViews();
+    setTopStories(stories);
+  };
+  fetchTop();
+   
   const fetchFeatured = async () => {
     const { data, error } = await supabase
       .from("stories")
@@ -56,7 +63,21 @@ export function Homepage() {
   fetchFeatured();
 }, []);
 
+// trong Homepage.tsx
+const getTopStoriesByViews = async () => {
+  const { data, error } = await supabase
+    .from("stories")
+    .select("*")
+    .order("views", { ascending: false })
+    .limit(10);
 
+  if (error) {
+    console.error("Supabase fetch top stories error:", error);
+    return [];
+  }
+  return data || [];
+};
+  
   // Handle search
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
