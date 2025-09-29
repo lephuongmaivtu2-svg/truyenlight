@@ -138,18 +138,7 @@ export function Homepage() {
                   </div>
                 </section>
     
-                {/* Latest Updates */}
-                <section>
-                  <div className="flex items-center space-x-2 mb-6">
-                    <Clock className="h-6 w-6 text-primary" />
-                    <h2 className="text-2xl font-bold text-foreground">Latest Updates</h2>
-                  </div>
-                  <div className="grid grid-cols-1 gap-4">
-                    {latestUpdates.slice(0, 5).map((story) => (
-                      <StoryCard key={story.id} story={story} />
-                    ))}
-                  </div>
-                </section>
+    
           {/* Rankings */}
             <section>
               <div className="flex items-center space-x-2 mb-6">
