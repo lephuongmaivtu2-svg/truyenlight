@@ -54,37 +54,41 @@ export function Homepage() {
 
   return (
     <div className="min-h-screen bg-background">
+    
       {/* Hero Section with Search */}
-      <section className="bg-gradient-to-r from-primary/10 to-primary/5 py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
-            Có truyện sớm nhất
+          <section className="relative bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-700 py-24">
+        <div className="absolute inset-0 bg-black/40" /> {/* Overlay tối */}
+        <div className="container relative mx-auto px-4 text-center text-white">
+          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
+            Thư viện Light Novel Online
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-             Đăng ký tài khoản để đánh dấu truyện đang đọc dang dở
+          <p className="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
+            Đọc truyện miễn phí, cập nhật sớm nhất và dễ dàng theo dõi bộ yêu thích.
           </p>
-
+      
           <form onSubmit={handleSearch} className="max-w-2xl mx-auto relative">
-            <div className="relative">
+            <div className="relative rounded-full shadow-lg overflow-hidden">
               <Input
                 type="text"
-                placeholder="Search for stories..."
+                placeholder="Tìm kiếm truyện..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-12 pl-12 pr-32 text-lg"
+                className="w-full h-14 pl-14 pr-36 text-lg border-none focus:ring-0"
               />
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-400" />
               <Button
                 type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 px-6 rounded-full"
               >
-                Search
+                Tìm
               </Button>
             </div>
           </form>
         </div>
       </section>
 
+
+      
       {/* Search Results */}
       {showSearchResults && (
         <section className="py-8 bg-muted/30">
