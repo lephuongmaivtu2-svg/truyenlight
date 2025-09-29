@@ -191,7 +191,7 @@ export function Homepage() {
                 </TabsContent>
               </Tabs>
             </section>
-          </div>
+    
 
       
       {/*Featured & Latest*/}
