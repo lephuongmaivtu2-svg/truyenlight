@@ -106,7 +106,94 @@ export function Homepage() {
           </div>
         </section>
       )}
+     {/* Featured Stories */}
+                <section>
+                  <div className="flex items-center space-x-2 mb-6">
+                    <Star className="h-6 w-6 text-primary" />
+                    <h2 className="text-2xl font-bold text-foreground">Featured Stories</h2>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {featuredStories.map((story) => (
+                      <StoryCard key={story.id} story={story} variant="featured" />
+                    ))}
+                  </div>
+                </section>
+    
+                {/* Latest Updates */}
+                <section>
+                  <div className="flex items-center space-x-2 mb-6">
+                    <Clock className="h-6 w-6 text-primary" />
+                    <h2 className="text-2xl font-bold text-foreground">Latest Updates</h2>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4">
+                    {latestUpdates.slice(0, 5).map((story) => (
+                      <StoryCard key={story.id} story={story} />
+                    ))}
+                  </div>
+                </section>
+          {/* Rankings */}
+            <section>
+              <div className="flex items-center space-x-2 mb-6">
+                <TrendingUp className="h-6 w-6 text-primary" />
+                <h2 className="text-2xl font-bold text-foreground">Top Stories</h2>
+              </div>
+              
+              <Tabs defaultValue="views" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="views">By Views</TabsTrigger>
+                  <TabsTrigger value="rating">By Rating</TabsTrigger>
+                  <TabsTrigger value="recent">Recent</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="views" className="mt-6">
+                  <div className="grid grid-cols-1 gap-4">
+                    {topStories.slice(0, 5).map((story, index) => (
+                      <div key={story.id} className="flex items-center space-x-4">
+                        <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
+                          {index + 1}
+                        </div>
+                        <div className="flex-1">
+                          <StoryCard story={story} variant="compact" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="rating" className="mt-6">
+                  <div className="grid grid-cols-1 gap-4">
+                    {[...topStories].sort((a, b) => b.rating - a.rating).slice(0, 5).map((story, index) => (
+                      <div key={story.id} className="flex items-center space-x-4">
+                        <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
+                          {index + 1}
+                        </div>
+                        <div className="flex-1">
+                          <StoryCard story={story} variant="compact" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="recent" className="mt-6">
+                  <div className="grid grid-cols-1 gap-4">
+                    {latestUpdates.slice(0, 5).map((story, index) => (
+                      <div key={story.id} className="flex items-center space-x-4">
+                        <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
+                          {index + 1}
+                        </div>
+                        <div className="flex-1">
+                          <StoryCard story={story} variant="compact" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </section>
+          </div>
 
+      
       {/* Featured & Latest */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
