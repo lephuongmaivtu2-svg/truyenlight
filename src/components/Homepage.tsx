@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Search, Clock } from "lucide-react";
+import { Search, TrendingUp, Clock, Star, CheckCircle } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { StoryCard } from "./StoryCard";
 import { supabase } from "../supabaseClient";
 
 export function Homepage() {
@@ -20,12 +21,18 @@ export function Homepage() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (!error) {
+      if (error) {
+        console.error("Supabase fetch error:", error);
+      } else {
+        console.log("Fetched stories:", data); // 👉 Log ra để xem data có về không
+
+        // Map lại field cho khớp UI (StoryCard.tsx dùng camelCase)
         const mapped = (data || []).map((story) => ({
           ...story,
-          coverImage: story.coverimage,
-          lastUpdated: story.created_at,
+          coverImage: story.coverimage,   // DB trả về "coverimage"
+          lastUpdated: story.created_at,  // dùng cho Clock
         }));
+
         setStories(mapped);
       }
     };
@@ -46,9 +53,17 @@ export function Homepage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Thanh tìm kiếm */}
-      <div className="bg-muted/20 py-6">
-        <div className="container mx-auto px-4">
+    
+      {/* Hero Section with Search */}
+      <section className="bg-gradient-to-r from-primary/10 to-primary/5 py-10">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+            Có truyện sớm nhất
+          </h1>
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Đăng ký tài khoản để đánh dấu truyện đang đọc dang dở
+          </p>
+      
           <form onSubmit={handleSearch} className="max-w-2xl mx-auto relative">
             <div className="relative">
               <Input
@@ -61,14 +76,14 @@ export function Homepage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Button
                 type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-9 px-5"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 px-5"
               >
                 Tìm
-              </Button>
+              </Button>     
             </div>
           </form>
         </div>
-      </div>
+      </section>
 
       {/* Search Results */}
       {showSearchResults && (
@@ -78,129 +93,48 @@ export function Homepage() {
               Search Results for "{searchQuery}"
             </h2>
             {searchResults.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {searchResults.map((story) => (
-                  <div
-                    key={story.id}
-                    className="border rounded-lg overflow-hidden bg-white shadow hover:shadow-md transition"
-                  >
-                    <img
-                      src={story.coverImage || "/placeholder.jpg"}
-                      alt={story.title}
-                      className="w-full h-40 object-cover"
-                    />
-                    <div className="p-2">
-                      <h3 className="text-sm font-semibold truncate">{story.title}</h3>
-                      <p className="text-xs text-gray-500">Mới cập nhật</p>
-                    </div>
-                  </div>
+                  <StoryCard key={story.id} story={story} />
                 ))}
               </div>
             ) : (
-              <p className="text-center text-muted-foreground">Không tìm thấy truyện.</p>
+              <p className="text-center text-muted-foreground">
+                No stories found.
+              </p>
             )}
           </div>
         </section>
       )}
 
-      {/* Grid + Sidebar */}
+      {/* Featured & Latest */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Grid 4 cột truyện */}
-          <div className="lg:col-span-3">
-            <div className="flex items-center space-x-2 mb-6">
-              <Clock className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Truyện mới cập nhật</h2>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {stories.slice(0, 20).map((story) => (
-                <div
-                  key={story.id}
-                  className="border rounded-lg overflow-hidden bg-white shadow hover:shadow-md transition"
-                >
-                  <img
-                    src={story.coverImage || "/placeholder.jpg"}
-                    alt={story.title}
-                    className="w-full h-40 object-cover"
-                  />
-                  <div className="p-2">
-                    <h3 className="text-sm font-semibold truncate">{story.title}</h3>
-                    <p className="text-xs text-gray-500">
-                      {story.lastUpdated
-                        ? new Date(story.lastUpdated).toLocaleDateString()
-                        : "Mới cập nhật"}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="lg:col-span-3 space-y-8">
+            {/* Latest Updates */}
+            <section>
+              <div className="flex items-center space-x-2 mb-6">
+                <Clock className="h-6 w-6 text-primary" />
+                <h2 className="text-2xl font-bold">Truyện nóng hổi vừa thổi vừa ăn</h2>
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                {stories.slice(0, 5).map((story) => (
+                  <StoryCard key={story.id} story={story} />
+                ))}
+              </div>
+            </section>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Bảng xếp hạng */}
             <Card>
               <CardHeader>
-                <CardTitle>Bảng xếp hạng</CardTitle>
+                <CardTitle>Toàn bộ truyện</CardTitle>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="day" className="w-full">
-                  <TabsList className="grid grid-cols-4 mb-3">
-                    <TabsTrigger value="day">Ngày</TabsTrigger>
-                    <TabsTrigger value="week">Tuần</TabsTrigger>
-                    <TabsTrigger value="month">Tháng</TabsTrigger>
-                    <TabsTrigger value="year">Năm</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="day">
-                    <ul className="space-y-2 text-sm">
-                      <li>1. Truyện hot A</li>
-                      <li>2. Truyện hot B</li>
-                      <li>3. Truyện hot C</li>
-                    </ul>
-                  </TabsContent>
-                  <TabsContent value="week">
-                    <ul className="space-y-2 text-sm">
-                      <li>1. Truyện tuần A</li>
-                      <li>2. Truyện tuần B</li>
-                      <li>3. Truyện tuần C</li>
-                    </ul>
-                  </TabsContent>
-                  <TabsContent value="month">
-                    <ul className="space-y-2 text-sm">
-                      <li>1. Truyện tháng A</li>
-                      <li>2. Truyện tháng B</li>
-                      <li>3. Truyện tháng C</li>
-                    </ul>
-                  </TabsContent>
-                  <TabsContent value="year">
-                    <ul className="space-y-2 text-sm">
-                      <li>1. Truyện năm A</li>
-                      <li>2. Truyện năm B</li>
-                      <li>3. Truyện năm C</li>
-                    </ul>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-
-            {/* Fanpage Facebook */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Theo dõi fanpage</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-hidden rounded-lg">
-                  <iframe
-                    title="Facebook Page"
-                    src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fyourpage&tabs&width=300&height=200&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true"
-                    width="100%"
-                    height="200"
-                    style={{ border: "none", overflow: "hidden" }}
-                    scrolling="no"
-                    frameBorder="0"
-                    allow="encrypted-media"
-                  ></iframe>
-                </div>
+                {stories.slice(0, 5).map((story) => (
+                  <StoryCard key={story.id} story={story} variant="compact" />
+                ))}
               </CardContent>
             </Card>
           </div>
