@@ -54,16 +54,18 @@ export function Homepage() {
   return (
     <div className="min-h-screen bg-background">
     
-      {/* Hero Section with Search */}
-      <section className="bg-gradient-to-r from-primary/10 to-primary/5 py-10">
+
+     {/* Hero Section with Search */}
+      <section className="bg-gradient-to-r from-primary/10 to-primary/5 py-16">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-            Có truyện sớm nhất
+          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
+            Truyện Light - Light Novel
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Đăng ký tài khoản để đánh dấu truyện đang đọc dang dở
+            Đăng nhập để lưu trữ những bộ truyện đang còn đọc dang dở.
           </p>
-      
+          
+          {/* Search Bar */}
           <form onSubmit={handleSearch} className="max-w-2xl mx-auto relative">
             <div className="relative">
               <Input
@@ -71,15 +73,15 @@ export function Homepage() {
                 placeholder="VD: Phong bì trả nợ..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-10 pl-10 pr-24 text-base"
+                className="w-full h-12 pl-12 pr-32 text-lg"
               />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Button
-                type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 px-5"
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Button 
+                type="submit" 
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8"
               >
                 Tìm
-              </Button>     
+              </Button>
             </div>
           </form>
         </div>
