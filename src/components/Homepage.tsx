@@ -107,11 +107,9 @@ const getTopStoriesByViews = async () => {
     }
   };
 
-  return (
+     return (
     <div className="min-h-screen bg-background">
-    
-
-     {/* Hero Section with Search */}
+      {/* Hero Section with Search */}
       <section className="bg-gradient-to-r from-primary/10 to-primary/5 py-16">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
@@ -147,9 +145,17 @@ const getTopStoriesByViews = async () => {
       {showSearchResults && (
         <section className="py-8 bg-muted/30">
           <div className="container mx-auto px-4">
-            <h2 className="text-2xl font-bold mb-6">
-              Search Results for "{searchQuery}"
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-foreground">
+                Search Results for "{searchQuery}"
+              </h2>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowSearchResults(false)}
+              >
+                Clear
+              </Button>
+            </div>
             {searchResults.length > 0 ? (
               <div className="grid grid-cols-1 gap-4">
                 {searchResults.map((story) => (
@@ -157,28 +163,48 @@ const getTopStoriesByViews = async () => {
                 ))}
               </div>
             ) : (
-              <p className="text-center text-muted-foreground">
-                No stories found.
-              </p>
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No stories found.</p>
+              </div>
             )}
           </div>
         </section>
       )}
-     {/* Featured Stories */}
-                <section>
-                  <div className="flex items-center space-x-2 mb-6">
-                    <Star className="h-6 w-6 text-primary" />
-                    <h2 className="text-2xl font-bold text-foreground">Featured Stories</h2>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {featuredStories.map((story) => (
-                      <StoryCard key={story.id} story={story} variant="featured" />
-                    ))}
-                  </div>
-                </section>
-    
-    
-          {/* Rankings */}
+
+      {/* Main Layout */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          
+          {/* Main Content (3/4) */}
+          <div className="lg:col-span-3 space-y-8">
+            
+            {/* Featured Stories */}
+            <section>
+              <div className="flex items-center space-x-2 mb-6">
+                <Star className="h-6 w-6 text-primary" />
+                <h2 className="text-2xl font-bold text-foreground">Featured Stories</h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {featuredStories.map((story) => (
+                  <StoryCard key={story.id} story={story} variant="featured" />
+                ))}
+              </div>
+            </section>
+
+            {/* Latest Updates */}
+            <section>
+              <div className="flex items-center space-x-2 mb-6">
+                <Clock className="h-6 w-6 text-primary" />
+                <h2 className="text-2xl font-bold">Latest Updates</h2>
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                {latestUpdates.slice(0, 5).map((story) => (
+                  <StoryCard key={story.id} story={story} />
+                ))}
+              </div>
+            </section>
+
+            {/* Rankings / Top Stories */}
             <section>
               <div className="flex items-center space-x-2 mb-6">
                 <TrendingUp className="h-6 w-6 text-primary" />
@@ -192,6 +218,7 @@ const getTopStoriesByViews = async () => {
                   <TabsTrigger value="recent">Recent</TabsTrigger>
                 </TabsList>
                 
+                {/* By Views */}
                 <TabsContent value="views" className="mt-6">
                   <div className="grid grid-cols-1 gap-4">
                     {topStories.slice(0, 5).map((story, index) => (
@@ -207,21 +234,26 @@ const getTopStoriesByViews = async () => {
                   </div>
                 </TabsContent>
                 
+                {/* By Rating */}
                 <TabsContent value="rating" className="mt-6">
                   <div className="grid grid-cols-1 gap-4">
-                    {[...topStories].sort((a, b) => b.rating - a.rating).slice(0, 5).map((story, index) => (
-                      <div key={story.id} className="flex items-center space-x-4">
-                        <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
-                          {index + 1}
+                    {[...topStories]
+                      .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+                      .slice(0, 5)
+                      .map((story, index) => (
+                        <div key={story.id} className="flex items-center space-x-4">
+                          <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
+                            {index + 1}
+                          </div>
+                          <div className="flex-1">
+                            <StoryCard story={story} variant="compact" />
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <StoryCard story={story} variant="compact" />
-                        </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </TabsContent>
                 
+                {/* By Recent */}
                 <TabsContent value="recent" className="mt-6">
                   <div className="grid grid-cols-1 gap-4">
                     {latestUpdates.slice(0, 5).map((story, index) => (
@@ -238,37 +270,60 @@ const getTopStoriesByViews = async () => {
                 </TabsContent>
               </Tabs>
             </section>
-    
-
-      
-      {/*Featured & Latest*/}
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-3 space-y-8">
-            {/* Latest Updates */}
-            <section>
-              <div className="flex items-center space-x-2 mb-6">
-                <Clock className="h-6 w-6 text-primary" />
-                <h2 className="text-2xl font-bold">Truyện nóng hổi vừa thổi vừa ăn</h2>
-              </div>
-              <div className="grid grid-cols-1 gap-4">
-                {stories.slice(0, 5).map((story) => (
-                  <StoryCard key={story.id} story={story} />
-                ))}
-              </div>
-            </section>
           </div>
 
-          {/* Sidebar */}
+          {/* Sidebar (1/4) */}
           <div className="space-y-6">
+            
+            {/* Completed Stories */}
             <Card>
               <CardHeader>
-                <CardTitle>Toàn bộ truyện</CardTitle>
+                <CardTitle className="flex items-center space-x-2">
+                  <CheckCircle className="h-5 w-5 text-primary" />
+                  <span>Completed Stories</span>
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                {stories.slice(0, 5).map((story) => (
+              <CardContent className="space-y-4">
+                {stories
+                  .filter((s) => s.status === "completed")
+                  .slice(0, 4)
+                  .map((story) => (
+                    <StoryCard key={story.id} story={story} variant="compact" />
+                  ))}
+              </CardContent>
+            </Card>
+
+            {/* You May Also Like */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Star className="h-5 w-5 text-primary" />
+                  <span>You May Also Like</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {topStories.slice(0, 4).map((story) => (
                   <StoryCard key={story.id} story={story} variant="compact" />
                 ))}
+              </CardContent>
+            </Card>
+
+            {/* Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Platform Stats</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Total Stories</span>
+                  <span className="font-semibold">{stories.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Completed</span>
+                  <span className="font-semibold">
+                    {stories.filter((s) => s.status === "completed").length}
+                  </span>
+                </div>
               </CardContent>
             </Card>
           </div>
