@@ -56,9 +56,9 @@ export function Homepage() {
     <div className="min-h-screen bg-background">
     
       {/* Hero Section with Search */}
-         <section className="bg-gradient-to-r from-primary/10 to-primary/5 py-50">
+         <section className="bg-gradient-to-r from-primary/10 to-primary/5 py-10">
           <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
+            <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
               Có truyện sớm nhất
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
@@ -69,18 +69,18 @@ export function Homepage() {
               <div className="relative">
                 <Input
                   type="text"
-                  placeholder="Search for stories..."
+                  placeholder="VD: Phong bì trả nợ..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-12 pl-12 pr-32 text-lg"
+                  className="w-full h-10 pl-10 pr-24 text-base"
                 />
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Button
                   type="submit"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 px-5"
                 >
-                  Search
-                </Button>
+                  Tìm
+                </Button>     
               </div>
             </form>
           </div>
