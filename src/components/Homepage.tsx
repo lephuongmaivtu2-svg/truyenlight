@@ -13,6 +13,7 @@ export function Homepage() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [featuredStories, setFeaturedStories] = useState<any[]>([]);
+  const topStories = getTopStoriesByViews();
   
   // Fetch tất cả stories
  useEffect(() => {
