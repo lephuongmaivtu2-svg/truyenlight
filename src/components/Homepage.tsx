@@ -12,32 +12,49 @@ export function Homepage() {
   const [stories, setStories] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
-
+  const [featuredStories, setFeaturedStories] = useState<any[]>([]);
+  
   // Fetch tất cả stories
-  useEffect(() => {
-    const fetchStories = async () => {
-      const { data, error } = await supabase
-        .from("stories")
-        .select("*")
-        .order("created_at", { ascending: false });
+ useEffect(() => {
+  const fetchStories = async () => {
+    const { data, error } = await supabase
+      .from("stories")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Supabase fetch error:", error);
-      } else {
-        console.log("Fetched stories:", data); // 👉 Log ra để xem data có về không
+    if (error) {
+      console.error("Supabase fetch error:", error);
+    } else {
+      console.log("Fetched stories:", data);
+      // Map lại field cho khớp UI (StoryCard.tsx dùng camelCase)
+      const mapped = (data || []).map((story) => ({
+        ...story,
+        coverImage: story.coverimage,   // DB trả về "coverimage"
+        lastUpdated: story.created_at,  // dùng cho Clock
+      }));
+      setStories(mapped);
+    }
+  };
 
-        // Map lại field cho khớp UI (StoryCard.tsx dùng camelCase)
-        const mapped = (data || []).map((story) => ({
-          ...story,
-          coverImage: story.coverimage,   // DB trả về "coverimage"
-          lastUpdated: story.created_at,  // dùng cho Clock
-        }));
+  const fetchFeatured = async () => {
+    const { data, error } = await supabase
+      .from("stories")
+      .select("*")
+      .eq("is_featured", true)
+      .limit(8);
 
-        setStories(mapped);
-      }
-    };
-    fetchStories();
-  }, []);
+    if (error) {
+      console.error("Supabase fetch featured error:", error);
+    } else {
+      setFeaturedStories(data || []);
+    }
+  };
+
+  // gọi cả 2 hàm
+  fetchStories();
+  fetchFeatured();
+}, []);
+
 
   // Handle search
   const handleSearch = (e: React.FormEvent) => {
