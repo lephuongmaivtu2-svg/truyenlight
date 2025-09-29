@@ -26,15 +26,15 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/20">
-      <div className="w-full max-w-md bg-white rounded-lg shadow p-6">
+    <div className="flex justify-center mt-12 mb-16 px-4">
+      <div className="w-full max-w-md border border-gray-200 bg-white rounded-lg shadow p-6">
         <h1 className="text-2xl font-bold mb-6 text-center">Đăng nhập</h1>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4 flex flex-col items-center">
           <input
             type="email"
             placeholder="Email"
-            className="w-full p-2 border rounded"
+            className="w-4/5 p-2 border rounded"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -42,17 +42,15 @@ export function LoginPage() {
           <input
             type="password"
             placeholder="Password"
-            className="w-full p-2 border rounded"
+            className="w-4/5 p-2 border rounded"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
 
-          {errorMsg && (
-            <p className="text-red-500 text-sm">{errorMsg}</p>
-          )}
+          {errorMsg && <p className="text-red-500 text-sm">{errorMsg}</p>}
 
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-4/5">
             Đăng nhập
           </Button>
         </form>
