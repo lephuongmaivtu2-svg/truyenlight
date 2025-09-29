@@ -26,35 +26,44 @@ export function LoginPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-md">
-      <h1 className="text-2xl font-bold mb-6">Đăng nhập</h1>
-      <form onSubmit={handleLogin} className="space-y-4">
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full p-2 border rounded"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full p-2 border rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        {errorMsg && <p className="text-red-500 text-sm">{errorMsg}</p>}
-        <Button type="submit" className="w-full">Đăng nhập</Button>
-      </form>
+    <div className="min-h-screen flex items-center justify-center bg-muted/20">
+      <div className="w-full max-w-md bg-white rounded-lg shadow p-6">
+        <h1 className="text-2xl font-bold mb-6 text-center">Đăng nhập</h1>
 
-      <p className="text-sm mt-4 text-center">
-        Chưa có tài khoản?{" "}
-        <Link to="/register" className="text-blue-500 hover:underline">
-          Đăng ký ngay
-        </Link>
-      </p>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full p-2 border rounded"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full p-2 border rounded"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+
+          {errorMsg && (
+            <p className="text-red-500 text-sm">{errorMsg}</p>
+          )}
+
+          <Button type="submit" className="w-full">
+            Đăng nhập
+          </Button>
+        </form>
+
+        <p className="text-sm mt-4 text-center">
+          Chưa có tài khoản?{" "}
+          <Link to="/register" className="text-blue-500 hover:underline">
+            Đăng ký ngay
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
