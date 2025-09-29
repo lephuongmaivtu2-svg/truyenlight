@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { StoryCard } from "./StoryCard";
 import { supabase } from "../supabaseClient";
-import { getTopStoriesByViews,  } from "../supabaseClient";
 
 export function Homepage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,6 +14,7 @@ export function Homepage() {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [featuredStories, setFeaturedStories] = useState<any[]>([]);
   const [topStories, setTopStories] = useState<any[]>([]);
+  const [latestUpdates, setLatestUpdates] = useState<any[]>([]);
 
   
   // Fetch tất cả stories
@@ -43,7 +43,24 @@ export function Homepage() {
     setTopStories(stories);
   };
   fetchTop();
-   
+   const fetchLatest = async () => {
+    const { data, error } = await supabase
+      .from("stories")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (!error && data) {
+      const mapped = data.map((story) => ({
+        ...story,
+        coverImage: story.coverimage,
+        lastUpdated: story.lastupdated ?? story.created_at,
+      }));
+      setLatestUpdates(mapped);
+    }
+  };
+
+  fetchLatest();
   const fetchFeatured = async () => {
     const { data, error } = await supabase
       .from("stories")
