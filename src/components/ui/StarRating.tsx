@@ -4,48 +4,51 @@ import { supabase } from "../../supabaseClient";
 
 type Props = {
   storyId: string;
-  initialRating: number;
-  onChange?: (value: number) => void;
+  initialMy?: number;     // user đã vote mấy sao
+  onRated?: (value: number) => void; // báo lên cha
 };
 
-export function StarRating({ storyId, initialRating, onChange }: Props) {
-  const [rating, setRating] = useState(initialRating || 0);
+export function StarRating({ storyId, initialMy = 0, onRated }: Props) {
+  const [my, setMy] = useState(initialMy);
   const [hover, setHover] = useState(0);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => setMy(initialMy), [initialMy]);
 
   const handleClick = async (value: number) => {
-    // optimistic UI
-    setRating(value);
-    onChange?.(value);
+    const { data: u } = await supabase.auth.getUser();
+    if (!u?.user) return alert("Vui lòng đăng nhập để đánh giá!");
 
+    setMy(value); // optimistic
+    onRated?.(value);
+
+    setSaving(true);
     const { error } = await supabase
-      .from("stories")
-      .update({ rating: value })
-      .eq("id", storyId);
-
-    if (error) {
-      console.error("❌ update rating error:", error);
-      // rollback nếu cần
-      setRating(initialRating || 0);
-      onChange?.(initialRating || 0);
-    }
+      .from("story_ratings")
+      .upsert(
+        { user_id: u.user.id, story_id: storyId, value, updated_at: new Date().toISOString() },
+        { onConflict: "user_id,story_id" }
+      );
+    if (error) console.error("❌ update rating error:", error);
+    setSaving(false);
   };
 
   return (
     <div className="flex items-center gap-1">
       {[1,2,3,4,5].map((v) => {
-        const active = v <= (hover || rating);
+        const active = v <= (hover || my);
         return (
           <button
             key={v}
             type="button"
             className="p-0 m-0 leading-none"
-            onClick={() => handleClick(v)}
+            onClick={() => !saving && handleClick(v)}
             onMouseEnter={() => setHover(v)}
             onMouseLeave={() => setHover(0)}
             aria-label={`Đánh giá ${v} sao`}
           >
             <Star
-              size={24}
+              size={22}
               strokeWidth={2}
               fill={active ? "currentColor" : "none"}
               className={active ? "text-yellow-400" : "text-gray-300"}
@@ -56,4 +59,3 @@ export function StarRating({ storyId, initialRating, onChange }: Props) {
     </div>
   );
 }
-
