@@ -135,15 +135,15 @@ export function ProfilePage() {
           <ul className="space-y-4">
             {progress.map((p) => (
               <li key={p.id}>
-                <Link to={`/story/${p.stories.slug}/${p.chapter_id}`}>
+                <Link to={`/story/${p.story.slug}/${p.chapter_id}`}>
                   <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted">
                     <img
-                      src={p.stories.coverImage || "https://placehold.co/100x140"}
-                      alt={p.stories.title}
+                      src={p.story.coverImage || "https://placehold.co/100x140"}
+                      alt={p.story.title}
                       className="w-16 h-20 object-cover rounded"
                     />
                     <div className="flex-1">
-                      <h3 className="font-semibold">{p.stories.title}</h3>
+                      <h3 className="font-semibold">{p.story.title}</h3>
                       <p className="text-sm text-muted-foreground">
                         Chương gần nhất: {p.chapter_id}
                       </p>
