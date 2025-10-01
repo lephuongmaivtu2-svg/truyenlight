@@ -82,7 +82,6 @@ export function StoryDetail() {
     useEffect(() => {
       const getUser = async () => {
         const { data, error } = await supabase.auth.getUser();
-        if (!error) setUser(data.user);
         if (data?.user) setUser(data.user);
       };
       getUser();
@@ -189,7 +188,7 @@ export function StoryDetail() {
 
 
   
-  return (
+    return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-8">
@@ -201,6 +200,7 @@ export function StoryDetail() {
                 <img
                   src={
                     story.coverImage ||
+                    story.coverimage ||
                     "https://placehold.co/300x400?text=No+Image"
                   }
                   alt={story.title}
@@ -230,9 +230,7 @@ export function StoryDetail() {
                   <div className="flex items-center space-x-2">
                     <Star className="h-4 w-4 text-yellow-500 fill-current" />
                     <span className="font-semibold">{story.rating ?? 0}</span>
-                    <span className="text-sm text-muted-foreground">
-                      Rating
-                    </span>
+                    <span className="text-sm text-muted-foreground">Rating</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Eye className="h-4 w-4" />
@@ -250,18 +248,14 @@ export function StoryDetail() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Clock className="h-4 w-4" />
-                    <span className="font-semibold">
-                      {formatDate(lastUpdated)}
-                    </span>
+                    <span className="font-semibold">{formatDate(lastUpdated)}</span>
                   </div>
                 </div>
 
                 {/* Status */}
                 <div className="flex items-center space-x-2">
                   <Badge
-                    variant={
-                      story.status === "Completed" ? "default" : "secondary"
-                    }
+                    variant={story.status === "Completed" ? "default" : "secondary"}
                     className="flex items-center space-x-1"
                   >
                     {story.status === "Completed" && (
@@ -272,64 +266,61 @@ export function StoryDetail() {
                 </div>
 
                 {/* Actions */}
-                      <div className="flex flex-wrap gap-3 pt-4">
-                        <Button
-                          variant={isBookmarked ? "secondary" : "default"}
-                          size="lg"
-                          onClick={handleBookmark}
-                        >
-                          {isBookmarked ? "Đã đánh dấu" : "Đánh dấu"}
+                <div className="flex flex-wrap gap-3 pt-4">
+                  {/* Bookmark */}
+                  <Button
+                    variant={isBookmarked ? "secondary" : "default"}
+                    size="lg"
+                    onClick={handleBookmark}
+                  >
+                    {isBookmarked ? "Đã đánh dấu" : "Đánh dấu"}
+                  </Button>
+
+                  {chapters.length > 0 && (
+                    <>
+                      {/* Đọc từ chương đầu */}
+                      <Link
+                        to={`/story/${story.slug}/${chapters[0].slug || chapters[0].id}`}
+                      >
+                        <Button size="lg" className="flex items-center space-x-2">
+                          <Play className="h-4 w-4" />
+                          <span>Đọc từ đầu</span>
                         </Button>
-                      
-                        {chapters.length > 0 && (
-                          <>
-                            {/* Đọc từ chương đầu */}
-                            <Link
-                              to={`/story/${story.slug}/${chapters[0].slug || chapters[0].id}`}
-                            >
-                              <Button size="lg" className="flex items-center space-x-2">
-                                <Play className="h-4 w-4" />
-                                <span>Đọc từ đầu</span>
-                              </Button>
-                            </Link>
-                      
-                            {/* Đọc chương mới nhất */}
-                            <Link
-                              to={`/story/${story.slug}/${
-                                chapters[chapters.length - 1].slug ||
-                                chapters[chapters.length - 1].id
-                              }`}
-                            >
-                              <Button
-                                variant="outline"
-                                size="lg"
-                                className="flex items-center space-x-2"
-                              >
-                                <BookOpen className="h-4 w-4" />
-                                <span>Read Newest</span>
-                              </Button>
-                            </Link>
-                          </>
-                        )}
-                      </div>
+                      </Link>
 
-
-                      {/* Tiếp tục đọc (bookmark progress từ DB) */}
-                      {lastRead?.chapter_id && (
-                        <Link to={`/story/${story.slug}/${lastRead.chapter_id}`}>
-                          <Button
-                            variant="outline"
-                            size="lg"
-                            className="flex items-center space-x-2"
-                          >
-                            <BookOpen className="h-4 w-4" />
-                            <span>Tiếp tục đọc</span>
-                          </Button>
-                        </Link>
-                      )}
-
-                    
+                      {/* Đọc chương mới nhất */}
+                      <Link
+                        to={`/story/${story.slug}/${
+                          chapters[chapters.length - 1].slug ||
+                          chapters[chapters.length - 1].id
+                        }`}
+                      >
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          className="flex items-center space-x-2"
+                        >
+                          <BookOpen className="h-4 w-4" />
+                          <span>Read Newest</span>
+                        </Button>
+                      </Link>
+                    </>
+                  )}
                 </div>
+
+                {/* Tiếp tục đọc (progress từ DB) */}
+                {lastRead?.chapter_id && (
+                  <Link to={`/story/${story.slug}/${lastRead.chapter_id}`}>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="flex items-center space-x-2 mt-2"
+                    >
+                      <BookOpen className="h-4 w-4" />
+                      <span>Tiếp tục đọc</span>
+                    </Button>
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -343,16 +334,11 @@ export function StoryDetail() {
                   {(story.description ?? "No description")
                     .split("\n")
                     .map((line, idx) =>
-                      line.trim() ? (
-                        <p key={idx}>{line}</p>
-                      ) : (
-                        <br key={idx} />
-                      )
+                      line.trim() ? <p key={idx}>{line}</p> : <br key={idx} />
                     )}
                 </div>
               </CardContent>
             </Card>
-
 
             {/* Chapter List */}
             {chapters.length > 0 && (
@@ -363,9 +349,7 @@ export function StoryDetail() {
                     <span className="text-sm text-muted-foreground">
                       Latest:{" "}
                       {chapters.at(-1)?.created_at
-                        ? new Date(
-                            chapters.at(-1)!.created_at!
-                          ).toLocaleDateString()
+                        ? new Date(chapters.at(-1)!.created_at!).toLocaleDateString()
                         : "-"}
                     </span>
                   </CardTitle>
@@ -375,9 +359,7 @@ export function StoryDetail() {
                     {chapters.map((chapter, index) => (
                       <div key={chapter.id}>
                         <Link
-                          to={`/story/${story.slug}/${
-                            chapter.slug || chapter.id
-                          }`}
+                          to={`/story/${story.slug}/${chapter.slug || chapter.id}`}
                           className="flex items-center justify-between p-3 hover:bg-muted rounded-lg"
                         >
                           <div className="flex items-center space-x-3">
@@ -390,13 +372,10 @@ export function StoryDetail() {
                                 {(chapter.views ?? 0).toLocaleString()} views
                               </p>
                             </div>
-
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {chapter.created_at
-                              ? new Date(
-                                  chapter.created_at
-                                ).toLocaleDateString()
+                              ? new Date(chapter.created_at).toLocaleDateString()
                               : "-"}
                           </div>
                         </Link>
@@ -425,7 +404,7 @@ export function StoryDetail() {
                         title: s.title,
                         author: s.author ?? "",
                         description: s.description ?? "",
-                        coverImage: s.coverImage ?? "",
+                        coverImage: s.coverImage ?? s.coverimage ?? "",
                         slug: s.slug,
                         rating: s.rating ?? 0,
                         views: s.views ?? 0,
@@ -443,5 +422,6 @@ export function StoryDetail() {
           </div>
         </div>
       </div>
+    </div>
   );
 }
