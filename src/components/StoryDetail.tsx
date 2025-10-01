@@ -287,12 +287,24 @@ useEffect(() => {
                       {/* Đọc từ chương đầu */}
                       <Link
                         to={`/story/${story.slug}/${chapters[0].slug || chapters[0].id}`}
+                        onClick={async () => {
+                          if (user) {
+                            await supabase.from("reading_progress").upsert({
+                              user_id: user.id,
+                              story_id: story.id,
+                              chapter_id: chapters[0].id,
+                              scroll_position: 0,
+                              updated_at: new Date().toISOString()
+                            }, { onConflict: ["user_id","story_id"] });
+                          }
+                        }}
                       >
                         <Button size="lg" className="flex items-center space-x-2">
                           <Play className="h-4 w-4" />
                           <span>Đọc từ đầu</span>
                         </Button>
                       </Link>
+
 
                       {/* Đọc chương mới nhất */}
                       <Link
@@ -315,17 +327,30 @@ useEffect(() => {
                 </div>
 
                 {/* Tiếp tục đọc (progress từ DB) */}
-                {lastRead?.chapter_id && (
-                  <Link to={`/story/${story.slug}/${lastRead.chapter_id}`}>
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="flex items-center space-x-2 mt-2"
+                  {lastRead?.chapter_id && (
+                    <Link
+                      to={`/story/${story.slug}/${lastRead.chapter_id}`}
+                      onClick={async () => {
+                        if (user) {
+                          await supabase.from("reading_progress").upsert({
+                            user_id: user.id,
+                            story_id: story.id,
+                            chapter_id: lastRead.chapter_id,
+                            scroll_position: lastRead.scroll_position ?? 0,
+                            updated_at: new Date().toISOString()
+                          }, { onConflict: ["user_id","story_id"] });
+                        }
+                      }}
                     >
-                      <BookOpen className="h-4 w-4" />
-                      <span>Tiếp tục đọc</span>
-                    </Button>
-                  </Link>
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="flex items-center space-x-2 mt-2"
+                      >
+                        <BookOpen className="h-4 w-4" />
+                        <span>Tiếp tục đọc</span>
+                      </Button>
+                    </Link>
                 )}
               </div>
             </div>
