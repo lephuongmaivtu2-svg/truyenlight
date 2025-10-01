@@ -35,7 +35,6 @@ async function getBookmarks(userId: string) {
   console.log("📚 getBookmarks.data =", data); // debug
   return data;
 }
-console.log("DEBUG bookmarks:", b);
 
 
 
@@ -165,7 +164,7 @@ export function ProfilePage() {
             <p className="text-muted-foreground">Chưa có truyện nào được đánh dấu.</p>
           ) : (
             <ul className="space-y-4">
-              {bookmarks.map((b) => (
+                {bookmarks.map((b) => (
                 <li key={b.id}>
                   <Link to={`/story/${b.story.slug}`}>
                     <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted">
@@ -185,6 +184,7 @@ export function ProfilePage() {
                   </Link>
                 </li>
               ))}
+
             </ul>
           )}
         </div>
