@@ -32,8 +32,10 @@ async function getBookmarks(userId: string) {
     return [];
   }
 
+  console.log("📚 getBookmarks.data =", data); // debug
   return data;
 }
+
 
 
 async function getReadingProgress(userId: string) {
@@ -156,35 +158,36 @@ export function ProfilePage() {
       </div>
 
       {/* Bookmarks */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Đánh dấu</h2>
-        {bookmarks.length === 0 ? (
-          <p className="text-muted-foreground">Chưa có truyện nào được đánh dấu.</p>
-        ) : (
-          <ul className="space-y-4">
-            {bookmarks.map((b) => (
-              <li key={b.id}>
-                <Link to={`/story/${b.stories.slug}`}>
-                  <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted">
-                    <img
-                      src={b.stories.coverimage || "https://placehold.co/100x140"}
-                      alt={b.stories.title}
-                      className="w-16 h-20 object-cover rounded"
-                    />
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{b.stories.title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {b.stories.author ?? "Unknown"}
-                      </p>
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Đánh dấu</h2>
+          {bookmarks.length === 0 ? (
+            <p className="text-muted-foreground">Chưa có truyện nào được đánh dấu.</p>
+          ) : (
+            <ul className="space-y-4">
+              {bookmarks.map((b) => (
+                <li key={b.id}>
+                  <Link to={`/story/${b.story.slug}`}>
+                    <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted">
+                      <img
+                        src={b.story.coverimage || "https://placehold.co/100x140"}
+                        alt={b.story.title}
+                        className="w-16 h-20 object-cover rounded"
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{b.story.title}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {b.story.author ?? "Unknown"}
+                        </p>
+                      </div>
+                      <Button size="sm">Đọc</Button>
                     </div>
-                    <Button size="sm">Đọc</Button>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
     </div>
   );
 }
