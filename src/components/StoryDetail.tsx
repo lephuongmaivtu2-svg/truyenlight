@@ -1,7 +1,9 @@
 import { supabase } from "../supabaseClient";
-import { StarRating } from "./ui/StarRating";
+import { StarRating } from "../ui/StarRating";
+import { fetchRatingStats } from "../lib/api"; // thêm export như trên
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+
 import {
   Star,
   Eye,
@@ -45,6 +47,18 @@ export function StoryDetail() {
   const [recommended, setRecommended] = useState<StoryRow[]>([]);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [ratingStats, setRatingStats] = useState({ avg: 0, count: 0, mine: 0 });
+ 
+
+useEffect(() => {
+  (async () => {
+    if (!story) return;
+    const { data: u } = await supabase.auth.getUser();
+    const stats = await fetchRatingStats(story.id, u?.user?.id);
+    setRatingStats(stats);
+  })();
+}, [story?.id]);
+  
   useEffect(() => {
   async function checkBookmark() {
     if (!user || !story) return;
@@ -163,7 +177,7 @@ useEffect(() => {
       : "-";
 
   const lastUpdated =
-    story.lastupdated || chapters.at(-1)?.created_at || story.created_at;
+    story.lastUpdated || chapters.at(-1)?.created_at || story.created_at;
 
   const handleBookmark = async () => {
     if (!user) {
@@ -232,30 +246,56 @@ useEffect(() => {
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="flex items-center space-x-2">
-                    <StarRating storyId={story.id} initialRating={story.rating ?? 0} />
-                  </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* ⬇️ Thay nguyên ô đầu bằng block này */}
+              <div className="flex items-center gap-2">
+                <StarRating
+                  storyId={story.id}
+                  initialMy={ratingStats.mine}
+                  onRated={async () => {
+                    // user vừa vote -> refetch avg + count để số liệu cập nhật ngay
+                    const { data: u } = await supabase.auth.getUser();
+                    const [{ data: s }, { data: m }] = await Promise.all([
+                      supabase
+                        .from("story_rating_stats")
+                        .select("avg_rating, rating_count")
+                        .eq("story_id", story.id)
+                        .maybeSingle(),
+                      u?.user
+                        ? supabase
+                            .from("story_ratings")
+                            .select("value")
+                            .eq("story_id", story.id)
+                            .eq("user_id", u.user.id)
+                            .maybeSingle()
+                        : Promise.resolve({ data: null }),
+                    ]);
+                    setRatingStats({
+                      avg: s?.avg_rating ?? 0,
+                      count: s?.rating_count ?? 0,
+                      mine: m?.value ?? 0,
+                    });
+                  }}
+                />
+                <span className="text-sm text-muted-foreground">
+                  {ratingStats.avg.toFixed(1)} ({ratingStats.count})
+                </span>
+              </div>
+            
+              {/* các ô còn lại giữ nguyên */}
+              <div className="flex items-center space-x-2">
+                <Eye className="h-4 w-4" />
+                <span className="font-semibold">{formatViews(story.views)}</span>
+                <span className="text-sm text-muted-foreground">Views</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <BookOpen className="h-4 w-4" />
+                <span className="font-semibold">{chapters.length}</span>
+                <span className="text-sm text-muted-foreground">Chapters</span>
+              </div>
+              {/* ... ô ngày cập nhật của m ở sau */}
+            </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Eye className="h-4 w-4" />
-                    <span className="font-semibold">
-                      {formatViews(story.views)}
-                    </span>
-                    <span className="text-sm text-muted-foreground">Views</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <BookOpen className="h-4 w-4" />
-                    <span className="font-semibold">{chapters.length}</span>
-                    <span className="text-sm text-muted-foreground">
-                      Chapters
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Clock className="h-4 w-4" />
-                    <span className="font-semibold">{formatDate(lastUpdated)}</span>
-                  </div>
-                </div>
 
                 {/* Status */}
                 <div className="flex items-center space-x-2">
@@ -423,7 +463,7 @@ useEffect(() => {
             {recommended.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">You May Also Like</CardTitle>
+                  <CardTitle className="text-lg">Truyện tương tự nè</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {recommended.map((s) => (
@@ -434,7 +474,7 @@ useEffect(() => {
                         title: s.title,
                         author: s.author ?? "",
                         description: s.description ?? "",
-                        coverImage: s.coverImage ?? s.coverImage ?? "",
+                        coverImage: s.coverImage ?? s.coverimage ?? "",
                         slug: s.slug,
                         rating: s.rating ?? 0,
                         views: s.views ?? 0,
