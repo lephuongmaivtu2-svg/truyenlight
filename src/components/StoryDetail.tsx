@@ -1,5 +1,5 @@
 import { supabase } from "../supabaseClient";
-
+import { StarRating } from "./ui/StarRating";
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
