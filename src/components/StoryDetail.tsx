@@ -443,6 +443,5 @@ export function StoryDetail() {
           </div>
         </div>
       </div>
-    </div>
   );
 }
