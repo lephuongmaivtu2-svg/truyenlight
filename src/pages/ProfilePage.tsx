@@ -17,12 +17,12 @@ async function getBookmarks(userId: string) {
         title,
         author,
         description,
-        coverimage,
+        coverImage,
         rating,
         views,
         status,
         genres,
-        lastupdated
+        lastUpdated
       )
     `)
     .eq("user_id", userId);
@@ -52,7 +52,7 @@ async function getReadingProgress(userId: string) {
         slug,
         title,
         author,
-        coverimage
+        coverImage
       )
     `)
     .eq("user_id", userId)
@@ -138,7 +138,7 @@ export function ProfilePage() {
                 <Link to={`/story/${p.stories.slug}/${p.chapter_id}`}>
                   <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted">
                     <img
-                      src={p.stories.coverimage || "https://placehold.co/100x140"}
+                      src={p.stories.coverImage || "https://placehold.co/100x140"}
                       alt={p.stories.title}
                       className="w-16 h-20 object-cover rounded"
                     />
@@ -169,7 +169,7 @@ export function ProfilePage() {
                   <Link to={`/story/${b.story.slug}`}>
                     <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted">
                       <img
-                        src={b.story.coverimage || "https://placehold.co/100x140"}
+                        src={b.story.coverImage || "https://placehold.co/100x140"}
                         alt={b.story.title}
                         className="w-16 h-20 object-cover rounded"
                       />
