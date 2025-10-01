@@ -1,53 +1,22 @@
+// lib/api.ts
 import { supabase } from "../supabaseClient";
-import { supabase } from "../supabaseClient";
-import { StoryRow } from "./api";
-
-export async function fetchBookmarks(userId: string): Promise<StoryRow[]> {
-  const { data, error } = await supabase
-    .from("bookmarks")
-    .select(`
-      story_id,
-      stories (
-        id,
-        title,
-        slug,
-        author,
-        description,
-        coverimage,
-        rating,
-        views,
-        status,
-        genres,
-        lastupdated
-      )
-    `)
-    .eq("user_id", userId);
-
-  if (error) {
-    console.error("Error fetching bookmarks:", error);
-    return [];
-  }
-
-  // map về dạng StoryRow cho tiện xài StoryCard
-  return data
-    .map((row) => row.stories)
-    .filter((s): s is StoryRow => !!s);
-}
 
 // ================== Types ==================
 export type StoryRow = {
   id: string;
   slug: string;
   title: string;
-  author: string | null;
-  description: string | null;
-  coverImage: string | null;
-  genres: string[] | string | null;
-  rating: number | null;
-  views: number | null;
-  status: string | null;
-  created_at: string | null;
-  lastUpdated: string | null;
+  author?: string | null;
+  description?: string | null;
+  coverImage?: string | null; // app-level camelCase
+  coverimage?: string | null; // DB snakeCase
+  genres?: string[] | string | null;
+  rating?: number | null;
+  views?: number | null;
+  status?: string | null;
+  created_at?: string | null;
+  lastupdated?: string | null; // DB snakeCase
+  lastUpdated?: string | null; // app-level camelCase
 };
 
 export type ChapterRow = {
@@ -66,7 +35,6 @@ export type StoryWithChapters = StoryRow & {
   chapters: ChapterRow[];
 };
 
-// Progress + Bookmark types
 export type ReadingProgress = {
   id: string;
   user_id: string;
@@ -80,30 +48,28 @@ export type Bookmark = {
   id: string;
   user_id: string;
   story_id: string;
-  chapter_id: string;
-  created_at: string;
+  chapter_id: string | null;
+  position?: number | null;
+  updated_at?: string | null;
 };
 
 // ================== Helper ==================
 function slugify(text: string): string {
   return text
     .toLowerCase()
-    .normalize("NFD") // bỏ dấu tiếng Việt
+    .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
 
-// ================== API ==================
-
-// Fetch story + chapters (dùng join)
-export async function fetchStoryWithChapters(slug: string): Promise<StoryWithChapters | null> {
+// ================== Stories ==================
+export async function fetchStoryWithChapters(
+  slug: string
+): Promise<StoryWithChapters | null> {
   const { data, error } = await supabase
     .from("stories")
-    .select(`
-      *,
-      chapters (*)
-    `)
+    .select(`*, chapters(*)`)
     .eq("slug", slug)
     .single();
 
@@ -111,13 +77,19 @@ export async function fetchStoryWithChapters(slug: string): Promise<StoryWithCha
     console.error("❌ fetchStoryWithChapters.error:", error);
     return null;
   }
-
-  return { ...data, chapters: data.chapters || [] };
+  // đảm bảo có mảng chapters
+  return { ...(data as any), chapters: (data as any).chapters ?? [] };
 }
 
-// Fetch top stories
-export async function fetchTopStories(limit = 5, excludeId?: string): Promise<StoryRow[]> {
-  let query = supabase.from("stories").select("*").order("views", { ascending: false }).limit(limit);
+export async function fetchTopStories(
+  limit = 5,
+  excludeId?: string
+): Promise<StoryRow[]> {
+  let query = supabase
+    .from("stories")
+    .select("*")
+    .order("views", { ascending: false })
+    .limit(limit);
   if (excludeId) query = query.neq("id", excludeId);
 
   const { data, error } = await query;
@@ -125,21 +97,27 @@ export async function fetchTopStories(limit = 5, excludeId?: string): Promise<St
     console.error("❌ fetchTopStories.error:", error);
     return [];
   }
-  return data || [];
+  return (data as any[]) ?? [];
 }
 
-// Fetch storyId by slug
-export async function fetchStoryIdBySlug(slug: string): Promise<string | null> {
-  const { data, error } = await supabase.from("stories").select("id").eq("slug", slug).single();
+export async function fetchStoryIdBySlug(
+  slug: string
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("stories")
+    .select("id")
+    .eq("slug", slug)
+    .single();
   if (error) {
     console.error("❌ fetchStoryIdBySlug.error:", error);
     return null;
   }
-  return data?.id ?? null;
+  return (data as any)?.id ?? null;
 }
 
-// Fetch all chapters of story
-export async function fetchChaptersOfStory(storyId: string): Promise<ChapterRow[]> {
+export async function fetchChaptersOfStory(
+  storyId: string
+): Promise<ChapterRow[]> {
   const { data, error } = await supabase
     .from("chapters")
     .select("*")
@@ -150,11 +128,13 @@ export async function fetchChaptersOfStory(storyId: string): Promise<ChapterRow[
     console.error("❌ fetchChaptersOfStory.error:", error);
     return [];
   }
-  return data || [];
+  return (data as any[]) ?? [];
 }
 
-// Fetch single chapter by ID
-export async function fetchChapterById(storyId: string, chapterId: string): Promise<ChapterRow | null> {
+export async function fetchChapterById(
+  storyId: string,
+  chapterId: string
+): Promise<ChapterRow | null> {
   const { data, error } = await supabase
     .from("chapters")
     .select("*")
@@ -166,11 +146,13 @@ export async function fetchChapterById(storyId: string, chapterId: string): Prom
     console.error("❌ fetchChapterById.error:", error);
     return null;
   }
-  return data;
+  return data as any;
 }
 
-// Fetch single chapter by SLUG
-export async function fetchChapterBySlug(storyId: string, chapterSlug: string): Promise<ChapterRow | null> {
+export async function fetchChapterBySlug(
+  storyId: string,
+  chapterSlug: string
+): Promise<ChapterRow | null> {
   const { data, error } = await supabase
     .from("chapters")
     .select("*")
@@ -182,11 +164,10 @@ export async function fetchChapterBySlug(storyId: string, chapterSlug: string): 
     console.error("❌ fetchChapterBySlug.error:", error);
     return null;
   }
-  return data;
+  return data as any;
 }
 
-// ================== Insert ==================
-// Tạo chapter mới với auto-slug
+// ================== Write helpers ==================
 export async function createChapterWithSlug(
   storyId: string,
   title: string,
@@ -197,16 +178,18 @@ export async function createChapterWithSlug(
 
   const { data, error } = await supabase
     .from("chapters")
-    .insert([{
-      story_id: storyId,
-      title,
-      content,
-      slug,
-      number: null,
-      word_count: wordCount,
-      created_at: new Date().toISOString(),
-      published_at: new Date().toISOString()
-    }])
+    .insert([
+      {
+        story_id: storyId,
+        title,
+        content,
+        slug,
+        number: null,
+        word_count: wordCount,
+        created_at: new Date().toISOString(),
+        published_at: new Date().toISOString(),
+      },
+    ])
     .select()
     .single();
 
@@ -214,14 +197,35 @@ export async function createChapterWithSlug(
     console.error("❌ createChapterWithSlug.error:", error);
     return null;
   }
-  return data;
+  return data as any;
 }
 
 // ================== Reading Progress ==================
-export async function getReadingProgress(userId: string): Promise<ReadingProgress[]> {
+export async function getReadingProgress(
+  userId: string
+): Promise<
+  Array<
+    ReadingProgress & {
+      story: Pick<StoryRow, "id" | "slug" | "title" | "author" | "coverimage">;
+    }
+  >
+> {
+  // join alias: story:story_id(...)
   const { data, error } = await supabase
     .from("reading_progress")
-    .select("*")
+    .select(
+      `
+      id,
+      user_id,
+      story_id,
+      chapter_id,
+      scroll_position,
+      updated_at,
+      story:story_id (
+        id, slug, title, author, coverimage
+      )
+    `
+    )
     .eq("user_id", userId)
     .order("updated_at", { ascending: false });
 
@@ -229,7 +233,7 @@ export async function getReadingProgress(userId: string): Promise<ReadingProgres
     console.error("❌ getReadingProgress.error:", error);
     return [];
   }
-  return data || [];
+  return (data as any[]) ?? [];
 }
 
 export async function updateReadingProgress(
@@ -240,13 +244,16 @@ export async function updateReadingProgress(
 ): Promise<void> {
   const { error } = await supabase
     .from("reading_progress")
-    .upsert({
-      user_id: userId,
-      story_id: storyId,
-      chapter_id: chapterId,
-      scroll_position: scrollPosition,
-      updated_at: new Date().toISOString()
-    }, { onConflict: "user_id,story_id" });
+    .upsert(
+      {
+        user_id: userId,
+        story_id: storyId,
+        chapter_id: chapterId,
+        scroll_position: Math.max(0, Math.floor(scrollPosition ?? 0)),
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id,story_id" }
+    );
 
   if (error) {
     console.error("❌ updateReadingProgress.error:", error);
@@ -254,42 +261,45 @@ export async function updateReadingProgress(
 }
 
 // ================== Bookmarks ==================
+/**
+ * Dùng cho Profile – trả về danh sách Story đã bookmark (đã join story).
+ * Giữ nguyên chữ ký: Promise<StoryRow[]>
+ */
+export async function fetchBookmarks(userId: string): Promise<StoryRow[]> {
+  // alias story:story_id để chắc ăn dù FK không khai báo trong Supabase
+  const { data, error } = await supabase
+    .from("bookmarks")
+    .select(
+      `
+      story:story_id (
+        id, slug, title, author, description, coverimage, rating, views, status, genres, lastupdated
+      )
+    `
+    )
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("❌ fetchBookmarks.error:", error);
+    return [];
+  }
+
+  // map về StoryRow[]
+  return ((data as any[]) ?? [])
+    .map((row) => row.story)
+    .filter(Boolean) as StoryRow[];
+}
+
+// Optional: thô (nếu cần nơi khác)
 export async function getBookmarks(userId: string): Promise<Bookmark[]> {
   const { data, error } = await supabase
     .from("bookmarks")
     .select("*")
     .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+    .order("updated_at", { ascending: false });
 
   if (error) {
     console.error("❌ getBookmarks.error:", error);
     return [];
   }
-  return data || [];
-}
-
-export async function addBookmark(userId: string, storyId: string, chapterId: string): Promise<void> {
-  const { error } = await supabase
-    .from("bookmarks")
-    .insert([{
-      user_id: userId,
-      story_id: storyId,
-      chapter_id: chapterId
-    }]);
-
-  if (error) {
-    console.error("❌ addBookmark.error:", error);
-  }
-}
-
-export async function removeBookmark(userId: string, chapterId: string): Promise<void> {
-  const { error } = await supabase
-    .from("bookmarks")
-    .delete()
-    .eq("user_id", userId)
-    .eq("chapter_id", chapterId);
-
-  if (error) {
-    console.error("❌ removeBookmark.error:", error);
-  }
+  return (data as any[]) ?? [];
 }
