@@ -164,26 +164,30 @@ export function ProfilePage() {
             <p className="text-muted-foreground">Chưa có truyện nào được đánh dấu.</p>
           ) : (
             <ul className="space-y-4">
-                {bookmarks.map((b) => (
-                <li key={b.id}>
-                  <Link to={`/story/${b.story.slug}`}>
-                    <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted">
-                      <img
-                        src={b.story.coverImage || "https://placehold.co/100x140"}
-                        alt={b.story.title}
-                        className="w-16 h-20 object-cover rounded"
-                      />
-                      <div className="flex-1">
-                        <h3 className="font-semibold">{b.story.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {b.story.author ?? "Unknown"}
-                        </p>
+               {bookmarks.map((b) => {
+                if (!b.story) return null; // tránh crash nếu story null
+                return (
+                  <li key={b.id}>
+                    <Link to={`/story/${b.story.slug}`}>
+                      <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted">
+                        <img
+                          src={b.story.coverImage || "https://placehold.co/100x140"}
+                          alt={b.story.title}
+                          className="w-16 h-20 object-cover rounded"
+                        />
+                        <div className="flex-1">
+                          <h3 className="font-semibold">{b.story.title}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {b.story.author ?? "Unknown"}
+                          </p>
+                        </div>
+                        <Button size="sm">Đọc</Button>
                       </div>
-                      <Button size="sm">Đọc</Button>
-                    </div>
-                  </Link>
-                </li>
-              ))}
+                    </Link>
+                  </li>
+                );
+              })}
+
 
             </ul>
           )}
