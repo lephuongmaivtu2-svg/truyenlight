@@ -1,3 +1,5 @@
+import { supabase } from "../supabaseClient";
+import { useSession } from "@supabase/auth-helpers-react"; // hoặc hook tương ứng của m
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
@@ -36,6 +38,23 @@ function toArrayGenres(genres: StoryWithChapters["genres"]): string[] {
 }
 
 export function StoryDetail() {
+  const session = useSession(); // user đang đăng nhập
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  
+  useEffect(() => {
+    async function checkBookmark() {
+      if (!session?.user || !story) return;
+      const { data } = await supabase
+        .from("bookmarks")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .eq("story_id", story.id)
+        .single();
+      setIsBookmarked(!!data);
+    }
+    checkBookmark();
+  }, [session?.user, story]);
+
   const { slug } = useParams<{ slug: string }>();
   const { getBookmark } = useReading();
 
@@ -118,6 +137,28 @@ export function StoryDetail() {
   const lastUpdated =
     story.lastupdated || chapters.at(-1)?.created_at || story.created_at;
 
+const handleBookmark = async () => {
+  if (!session?.user) {
+    alert("Vui lòng đăng nhập để đánh dấu truyện");
+    return;
+  }
+
+  if (isBookmarked) {
+    await supabase
+      .from("bookmarks")
+      .delete()
+      .eq("user_id", session.user.id)
+      .eq("story_id", story?.id);
+    setIsBookmarked(false);
+  } else {
+    await supabase
+      .from("bookmarks")
+      .insert([{ user_id: session.user.id, story_id: story?.id }]);
+    setIsBookmarked(true);
+  }
+};
+
+  
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -210,6 +251,14 @@ export function StoryDetail() {
                           chapters[0].slug || chapters[0].id
                         }`}
                       >
+                        <Button
+                          variant={isBookmarked ? "secondary" : "default"}
+                          size="lg"
+                          onClick={handleBookmark}
+                        >
+                          {isBookmarked ? "Đã đánh dấu" : "Đánh dấu"}
+                        </Button>
+
                         <Button size="lg" className="flex items-center space-x-2">
                           <Play className="h-4 w-4" />
                           <span>Đọc từ đầu</span>
