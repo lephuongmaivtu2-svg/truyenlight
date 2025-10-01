@@ -435,13 +435,13 @@ useEffect(() => {
                         title: s.title,
                         author: s.author ?? "",
                         description: s.description ?? "",
-                        coverImage: s.coverImage ?? s.coverimage ?? "",
+                        coverImage: s.coverImage ?? s.coverImage ?? "",
                         slug: s.slug,
                         rating: s.rating ?? 0,
                         views: s.views ?? 0,
                         status: s.status ?? "Ongoing",
                         genres: toArrayGenres(s.genres),
-                        lastUpdated: s.lastupdated ?? new Date().toISOString(),
+                        lastUpdated: s.lastUpdated ?? new Date().toISOString(),
                         chapters: [],
                       }}
                       variant="compact"
