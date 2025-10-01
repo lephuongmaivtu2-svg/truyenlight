@@ -11,7 +11,7 @@ async function getBookmarks(userId: string) {
       id,
       chapter_id,
       story_id,
-      stories (
+      story:story_id (
         id,
         slug,
         title,
@@ -35,15 +35,17 @@ async function getBookmarks(userId: string) {
   return data;
 }
 
+
 async function getReadingProgress(userId: string) {
   const { data, error } = await supabase
-    .from("bookmarks")
+    .from("reading_progress")
     .select(`
       id,
       chapter_id,
       story_id,
-      position,
-      stories (
+      scroll_position,
+      updated_at,
+      story:story_id (
         id,
         slug,
         title,
@@ -52,7 +54,7 @@ async function getReadingProgress(userId: string) {
       )
     `)
     .eq("user_id", userId)
-    .not("chapter_id", "is", null); // chỉ lấy những cái có chapter_id
+    .order("updated_at", { ascending: false });
 
   if (error) {
     console.error("Error getProgress:", error);
@@ -61,6 +63,7 @@ async function getReadingProgress(userId: string) {
 
   return data;
 }
+
 
 // ---------------- Component ----------------
 export function ProfilePage() {
