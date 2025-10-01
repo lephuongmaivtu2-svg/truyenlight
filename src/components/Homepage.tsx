@@ -204,36 +204,42 @@ const getTopStoriesByViews = async () => {
               </div>
             </section>
 
-            {/* Rankings / Top Stories */}
+           {/* Rankings / Top Stories */}
             <section>
               <div className="flex items-center space-x-2 mb-6">
                 <TrendingUp className="h-6 w-6 text-primary" />
                 <h2 className="text-2xl font-bold text-foreground">Top Stories</h2>
               </div>
-              
+            
               <Tabs defaultValue="views" className="w-full">
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="views">By Views</TabsTrigger>
                   <TabsTrigger value="rating">By Rating</TabsTrigger>
                   <TabsTrigger value="recent">Recent</TabsTrigger>
                 </TabsList>
-                
+            
                 {/* By Views */}
                 <TabsContent value="views" className="mt-6">
                   <div className="grid grid-cols-1 gap-4">
                     {topStories.slice(0, 5).map((story, index) => (
-                      <div key={story.id} className="flex items-center space-x-4">
+                      <div
+                        key={story.id}
+                        className="flex items-center gap-3 w-full overflow-hidden"
+                      >
+                        {/* số thứ tự */}
                         <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
                           {index + 1}
                         </div>
-                        <div className="flex-1">
+            
+                        {/* story card */}
+                        <div className="flex-1 min-w-0 overflow-hidden">
                           <StoryCard story={story} variant="compact" />
                         </div>
                       </div>
                     ))}
                   </div>
                 </TabsContent>
-                
+            
                 {/* By Rating */}
                 <TabsContent value="rating" className="mt-6">
                   <div className="grid grid-cols-1 gap-4">
@@ -241,27 +247,33 @@ const getTopStoriesByViews = async () => {
                       .sort((a, b) => (b.rating || 0) - (a.rating || 0))
                       .slice(0, 5)
                       .map((story, index) => (
-                        <div key={story.id} className="flex items-center space-x-4">
+                        <div
+                          key={story.id}
+                          className="flex items-center gap-3 w-full overflow-hidden"
+                        >
                           <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
                             {index + 1}
                           </div>
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0 overflow-hidden">
                             <StoryCard story={story} variant="compact" />
                           </div>
                         </div>
                       ))}
                   </div>
                 </TabsContent>
-                
+            
                 {/* By Recent */}
                 <TabsContent value="recent" className="mt-6">
                   <div className="grid grid-cols-1 gap-4">
                     {latestUpdates.slice(0, 5).map((story, index) => (
-                      <div key={story.id} className="flex items-center space-x-4">
+                      <div
+                        key={story.id}
+                        className="flex items-center gap-3 w-full overflow-hidden"
+                      >
                         <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
                           {index + 1}
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0 overflow-hidden">
                           <StoryCard story={story} variant="compact" />
                         </div>
                       </div>
