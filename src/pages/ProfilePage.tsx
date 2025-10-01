@@ -1,13 +1,72 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../supabaseClient";
-import { getReadingProgress, getBookmarks, ReadingProgress, Bookmark } from "../lib/api";
 import { Button } from "../components/ui/button";
 
+// ---------------- API call ----------------
+async function getBookmarks(userId: string) {
+  const { data, error } = await supabase
+    .from("bookmarks")
+    .select(`
+      id,
+      chapter_id,
+      story_id,
+      stories (
+        id,
+        slug,
+        title,
+        author,
+        description,
+        coverimage,
+        rating,
+        views,
+        status,
+        genres,
+        lastupdated
+      )
+    `)
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("Error getBookmarks:", error);
+    return [];
+  }
+
+  return data;
+}
+
+async function getReadingProgress(userId: string) {
+  const { data, error } = await supabase
+    .from("bookmarks")
+    .select(`
+      id,
+      chapter_id,
+      story_id,
+      position,
+      stories (
+        id,
+        slug,
+        title,
+        author,
+        coverimage
+      )
+    `)
+    .eq("user_id", userId)
+    .not("chapter_id", "is", null); // chỉ lấy những cái có chapter_id
+
+  if (error) {
+    console.error("Error getProgress:", error);
+    return [];
+  }
+
+  return data;
+}
+
+// ---------------- Component ----------------
 export function ProfilePage() {
   const [userId, setUserId] = useState<string | null>(null);
-  const [progress, setProgress] = useState<ReadingProgress[]>([]);
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [progress, setProgress] = useState<any[]>([]);
+  const [bookmarks, setBookmarks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Lấy user hiện tại
@@ -29,7 +88,7 @@ export function ProfilePage() {
 
       const [p, b] = await Promise.all([
         getReadingProgress(userId),
-        getBookmarks(userId)
+        getBookmarks(userId),
       ]);
 
       setProgress(p);
@@ -40,14 +99,20 @@ export function ProfilePage() {
   }, [userId]);
 
   if (loading) {
-    return <div className="container mx-auto px-4 py-8">Đang tải nè, đợi xíu nha…</div>;
+    return (
+      <div className="container mx-auto px-4 py-8">
+        Đang tải nè, đợi xíu nha…
+      </div>
+    );
   }
 
   if (!userId) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
         <p className="mb-4">Bạn cần đăng nhập để xem trang cá nhân.</p>
-        <Link to="/login"><Button>Đăng nhập</Button></Link>
+        <Link to="/login">
+          <Button>Đăng nhập</Button>
+        </Link>
       </div>
     );
   }
@@ -62,14 +127,24 @@ export function ProfilePage() {
         {progress.length === 0 ? (
           <p className="text-muted-foreground">Chưa có truyện nào.</p>
         ) : (
-          <ul className="space-y-2">
+          <ul className="space-y-4">
             {progress.map((p) => (
-              <li key={p.id} className="flex justify-between items-center p-3 border rounded-lg">
-                <span>
-                  Story ID: {p.story_id} – Chapter ID: {p.chapter_id}
-                </span>
-                <Link to={`/story/${p.story_id}/${p.chapter_id}`}>
-                  <Button size="sm">Continue</Button>
+              <li key={p.id}>
+                <Link to={`/story/${p.stories.slug}/${p.chapter_id}`}>
+                  <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted">
+                    <img
+                      src={p.stories.coverimage || "https://placehold.co/100x140"}
+                      alt={p.stories.title}
+                      className="w-16 h-20 object-cover rounded"
+                    />
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{p.stories.title}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Chương gần nhất: {p.chapter_id}
+                      </p>
+                    </div>
+                    <Button size="sm">Tiếp tục đọc</Button>
+                  </div>
                 </Link>
               </li>
             ))}
@@ -83,14 +158,24 @@ export function ProfilePage() {
         {bookmarks.length === 0 ? (
           <p className="text-muted-foreground">Chưa có truyện nào được đánh dấu.</p>
         ) : (
-          <ul className="space-y-2">
+          <ul className="space-y-4">
             {bookmarks.map((b) => (
-              <li key={b.id} className="flex justify-between items-center p-3 border rounded-lg">
-                <span>
-                  Story ID: {b.story_id} – Chapter ID: {b.chapter_id}
-                </span>
-                <Link to={`/story/${b.story_id}/${b.chapter_id}`}>
-                  <Button size="sm">Đọc</Button>
+              <li key={b.id}>
+                <Link to={`/story/${b.stories.slug}`}>
+                  <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted">
+                    <img
+                      src={b.stories.coverimage || "https://placehold.co/100x140"}
+                      alt={b.stories.title}
+                      className="w-16 h-20 object-cover rounded"
+                    />
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{b.stories.title}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {b.stories.author ?? "Unknown"}
+                      </p>
+                    </div>
+                    <Button size="sm">Đọc</Button>
+                  </div>
                 </Link>
               </li>
             ))}
