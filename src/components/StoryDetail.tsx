@@ -39,7 +39,7 @@ function toArrayGenres(genres: StoryWithChapters["genres"]): string[] {
 
 export function StoryDetail() {
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [lastRead, setLastRead] = useState<any>(null);
+  const [lastRead, setLastRead] = useState<{ chapter_id: string; scroll_position: number } | null>(null);
   const { slug } = useParams<{ slug: string }>();
   const [story, setStory] = useState<StoryWithChapters | null>(null);
   const [recommended, setRecommended] = useState<StoryRow[]>([]);
@@ -65,17 +65,24 @@ export function StoryDetail() {
 }, [user, story]);
 
   
+    // Lấy progress từ reading_progress
   useEffect(() => {
     async function fetchProgress() {
       if (!user || !story) return;
-      const { data } = await supabase
-        .from("bookmarks")
-        .select("chapter_id, position")
+      const { data, error } = await supabase
+        .from("reading_progress")
+        .select("chapter_id, scroll_position")
         .eq("user_id", user.id)
         .eq("story_id", story.id)
         .maybeSingle();
-      if (data) setLastRead(data);
+  
+      if (!error && data) setLastRead(data);
+      else setLastRead(null);
     }
+    fetchProgress();
+  }, [user, story]);
+
+    
     fetchProgress();
   }, [user, story]);
 
