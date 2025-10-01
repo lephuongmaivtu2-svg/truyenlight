@@ -7,11 +7,10 @@ import { StoryDetail } from './components/StoryDetail';
 import { ChapterReader } from './components/ChapterReader';
 import { ReadingProvider } from './components/ReadingProvider';
 
-// 👇 import thêm
+// 👇 import đúng 1 lần thôi
 import { ProfilePage } from './pages/ProfilePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
-import { ProfilePage } from "./components/ProfilePage";
 
 export default function App() {
   return (
@@ -25,11 +24,10 @@ export default function App() {
               <Route path="/story/:slug" element={<StoryDetail />} />
               <Route path="/story/:slug/:chapterSlug" element={<ChapterReader />} />
 
-              {/* 👇 bổ sung các route mới */}
+              {/* 👇 route mới */}
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
             </Routes>
           </main>
           <Footer />
