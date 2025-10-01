@@ -303,3 +303,43 @@ export async function getBookmarks(userId: string): Promise<Bookmark[]> {
   }
   return (data as any[]) ?? [];
 }
+
+// Lấy thống kê rating + vote của chính user
+export async function fetchRatingStats(storyId: string, userId?: string) {
+  const [{ data: stats }, { data: mine }] = await Promise.all([
+    supabase
+      .from("story_rating_stats")
+      .select("avg_rating, rating_count")
+      .eq("story_id", storyId)
+      .maybeSingle(),
+    userId
+      ? supabase
+          .from("story_ratings")
+          .select("value")
+          .eq("story_id", storyId)
+          .eq("user_id", userId)
+          .maybeSingle()
+      : Promise.resolve({ data: null as any }),
+  ]);
+
+  return {
+    avg: stats?.avg_rating ?? 0,
+    count: stats?.rating_count ?? 0,
+    mine: mine?.value ?? 0,
+  };
+}
+
+export async function upsertUserRating(
+  userId: string,
+  storyId: string,
+  value: number
+) {
+  const { error } = await supabase
+    .from("story_ratings")
+    .upsert(
+      { user_id: userId, story_id: storyId, value, updated_at: new Date().toISOString() },
+      { onConflict: "user_id,story_id" }
+    );
+  if (error) console.error("❌ upsertUserRating:", error);
+}
+
