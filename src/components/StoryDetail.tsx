@@ -1,5 +1,5 @@
 import { supabase } from "../supabaseClient";
-import { useSession } from "@supabase/auth-helpers-react"; // hoặc hook tương ứng của m
+
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
@@ -38,29 +38,56 @@ function toArrayGenres(genres: StoryWithChapters["genres"]): string[] {
 }
 
 export function StoryDetail() {
-  const session = useSession(); // user đang đăng nhập
   const [isBookmarked, setIsBookmarked] = useState(false);
-  
-  useEffect(() => {
-    async function checkBookmark() {
-      if (!session?.user || !story) return;
-      const { data } = await supabase
-        .from("bookmarks")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .eq("story_id", story.id)
-        .single();
-      setIsBookmarked(!!data);
-    }
-    checkBookmark();
-  }, [session?.user, story]);
-
+  const [lastRead, setLastRead] = useState<any>(null);
   const { slug } = useParams<{ slug: string }>();
-  const { getBookmark } = useReading();
-
   const [story, setStory] = useState<StoryWithChapters | null>(null);
   const [recommended, setRecommended] = useState<StoryRow[]>([]);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  useEffect(() => {
+  async function checkBookmark() {
+    if (!user || !story) return;
+    const { data, error } = await supabase
+      .from("bookmarks")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("story_id", story.id)
+      .maybeSingle();
+
+    if (!error && data) {
+      setIsBookmarked(true);
+    } else {
+      setIsBookmarked(false);
+    }
+  }
+  checkBookmark();
+}, [user, story]);
+
+  
+  useEffect(() => {
+    async function fetchProgress() {
+      if (!user || !story) return;
+      const { data } = await supabase
+        .from("bookmarks")
+        .select("chapter_id, position")
+        .eq("user_id", user.id)
+        .eq("story_id", story.id)
+        .maybeSingle();
+      if (data) setLastRead(data);
+    }
+    fetchProgress();
+  }, [user, story]);
+
+    useEffect(() => {
+      const getUser = async () => {
+        const { data, error } = await supabase.auth.getUser();
+        if (!error) setUser(data.user);
+        if (data?.user) setUser(data.user);
+      };
+      getUser();
+    }, []);
+  
 
   useEffect(() => {
     let alive = true;
@@ -84,10 +111,6 @@ export function StoryDetail() {
     };
   }, [slug]);
 
-  const bookmark = useMemo(
-    () => (slug ? getBookmark(slug) : null),
-    [slug, getBookmark]
-  );
 
   if (loading) {
     return (
@@ -137,26 +160,33 @@ export function StoryDetail() {
   const lastUpdated =
     story.lastupdated || chapters.at(-1)?.created_at || story.created_at;
 
-const handleBookmark = async () => {
-  if (!session?.user) {
-    alert("Vui lòng đăng nhập để đánh dấu truyện");
-    return;
-  }
+  const handleBookmark = async () => {
+    if (!user) {
+      alert("Vui lòng đăng nhập để đánh dấu truyện");
+      return;
+    }
+  
+    if (isBookmarked) {
+      await supabase
+        .from("bookmarks")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("story_id", story?.id);
+      setIsBookmarked(false);
+    } else {
+      await supabase
+        .from("bookmarks")
+        .upsert({
+          user_id: user.id,
+          story_id: story?.id,
+          chapter_id: null,      // hoặc chapters[0]?.id nếu muốn mặc định
+          position: 0,
+          updated_at: new Date().toISOString()
+        }, { onConflict: ["user_id","story_id"] });
+      setIsBookmarked(true);
+    }
+  };
 
-  if (isBookmarked) {
-    await supabase
-      .from("bookmarks")
-      .delete()
-      .eq("user_id", session.user.id)
-      .eq("story_id", story?.id);
-    setIsBookmarked(false);
-  } else {
-    await supabase
-      .from("bookmarks")
-      .insert([{ user_id: session.user.id, story_id: story?.id }]);
-    setIsBookmarked(true);
-  }
-};
 
   
   return (
@@ -242,15 +272,7 @@ const handleBookmark = async () => {
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-wrap gap-3 pt-4">
-                  {chapters.length > 0 && (
-                    <>
-                      {/* Đọc từ chương đầu */}
-                      <Link
-                        to={`/story/${story.slug}/${
-                          chapters[0].slug || chapters[0].id
-                        }`}
-                      >
+                      <div className="flex flex-wrap gap-3 pt-4">
                         <Button
                           variant={isBookmarked ? "secondary" : "default"}
                           size="lg"
@@ -258,33 +280,43 @@ const handleBookmark = async () => {
                         >
                           {isBookmarked ? "Đã đánh dấu" : "Đánh dấu"}
                         </Button>
+                      
+                        {chapters.length > 0 && (
+                          <>
+                            {/* Đọc từ chương đầu */}
+                            <Link
+                              to={`/story/${story.slug}/${chapters[0].slug || chapters[0].id}`}
+                            >
+                              <Button size="lg" className="flex items-center space-x-2">
+                                <Play className="h-4 w-4" />
+                                <span>Đọc từ đầu</span>
+                              </Button>
+                            </Link>
+                      
+                            {/* Đọc chương mới nhất */}
+                            <Link
+                              to={`/story/${story.slug}/${
+                                chapters[chapters.length - 1].slug ||
+                                chapters[chapters.length - 1].id
+                              }`}
+                            >
+                              <Button
+                                variant="outline"
+                                size="lg"
+                                className="flex items-center space-x-2"
+                              >
+                                <BookOpen className="h-4 w-4" />
+                                <span>Read Newest</span>
+                              </Button>
+                            </Link>
+                          </>
+                        )}
+                      </div>
 
-                        <Button size="lg" className="flex items-center space-x-2">
-                          <Play className="h-4 w-4" />
-                          <span>Đọc từ đầu</span>
-                        </Button>
-                      </Link>
 
-                      {/* Đọc chương mới nhất */}
-                      <Link
-                        to={`/story/${story.slug}/${
-                          chapters[chapters.length - 1].slug ||
-                          chapters[chapters.length - 1].id
-                        }`}
-                      >
-                        <Button
-                          variant="outline"
-                          size="lg"
-                          className="flex items-center space-x-2"
-                        >
-                          <BookOpen className="h-4 w-4" />
-                          <span>Read Newest</span>
-                        </Button>
-                      </Link>
-
-                      {/* Tiếp tục đọc (bookmark) */}
-                      {bookmark && (
-                        <Link to={`/story/${story.slug}/${bookmark.chapterSlug}`}>
+                      {/* Tiếp tục đọc (bookmark progress từ DB) */}
+                      {lastRead?.chapter_id && (
+                        <Link to={`/story/${story.slug}/${lastRead.chapter_id}`}>
                           <Button
                             variant="outline"
                             size="lg"
@@ -295,8 +327,8 @@ const handleBookmark = async () => {
                           </Button>
                         </Link>
                       )}
-                    </>
-                  )}
+
+                    
                 </div>
               </div>
             </div>
