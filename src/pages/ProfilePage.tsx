@@ -35,6 +35,7 @@ async function getBookmarks(userId: string) {
   console.log("📚 getBookmarks.data =", data); // debug
   return data;
 }
+console.log("DEBUG bookmarks:", b);
 
 
 
