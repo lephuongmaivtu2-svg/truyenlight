@@ -9,13 +9,13 @@ export type StoryRow = {
   author?: string | null;
   description?: string | null;
   coverImage?: string | null; // app-level camelCase
-  coverimage?: string | null; // DB snakeCase
+  coverImage?: string | null; // DB snakeCase
   genres?: string[] | string | null;
   rating?: number | null;
   views?: number | null;
   status?: string | null;
   created_at?: string | null;
-  lastupdated?: string | null; // DB snakeCase
+  lastUpdated?: string | null; // DB snakeCase
   lastUpdated?: string | null; // app-level camelCase
 };
 
