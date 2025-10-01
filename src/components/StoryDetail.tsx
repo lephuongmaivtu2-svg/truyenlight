@@ -65,35 +65,34 @@ export function StoryDetail() {
 }, [user, story]);
 
   
-    // Lấy progress từ reading_progress
-  useEffect(() => {
-    async function fetchProgress() {
-      if (!user || !story) return;
-      const { data, error } = await supabase
-        .from("reading_progress")
-        .select("chapter_id, scroll_position")
-        .eq("user_id", user.id)
-        .eq("story_id", story.id)
-        .maybeSingle();
-  
-      if (!error && data) setLastRead(data);
-      else setLastRead(null);
-    }
-    fetchProgress();
-  }, [user, story]);
+ // Lấy progress từ reading_progress
+useEffect(() => {
+  async function fetchProgress() {
+    if (!user || !story) return;
 
-    
-    fetchProgress();
-  }, [user, story]);
+    const { data, error } = await supabase
+      .from("reading_progress")
+      .select("chapter_id, scroll_position")
+      .eq("user_id", user.id)
+      .eq("story_id", story.id)
+      .maybeSingle();
 
-    useEffect(() => {
-      const getUser = async () => {
-        const { data, error } = await supabase.auth.getUser();
-        if (data?.user) setUser(data.user);
-      };
-      getUser();
-    }, []);
-  
+    if (!error && data) setLastRead(data);
+    else setLastRead(null);
+  }
+
+  fetchProgress();
+}, [user, story]);
+
+// Lấy user hiện tại
+useEffect(() => {
+  async function getUserFn() {
+    const { data } = await supabase.auth.getUser();
+    if (data?.user) setUser(data.user);
+  }
+  getUserFn();
+}, []);
+
 
   useEffect(() => {
     let alive = true;
