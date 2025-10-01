@@ -1,4 +1,6 @@
 // components/ChapterReader.tsx
+
+import { CommentSection } from "./CommentSection";
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -193,6 +195,8 @@ export function ChapterReader() {
             )}
         </div>
       </div>
+
+      <CommentSection chapterId={chapter.id} />
 
       {/* Footer nav (Prev/Next) */}
       <div className="container mx-auto px-4 py-8 flex items-center justify-between">
