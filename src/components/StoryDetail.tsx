@@ -234,10 +234,9 @@ useEffect(() => {
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="flex items-center space-x-2">
-                    <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                    <span className="font-semibold">{story.rating ?? 0}</span>
-                    <span className="text-sm text-muted-foreground">Rating</span>
+                    <StarRating storyId={story.id} initialRating={story.rating ?? 0} />
                   </div>
+
                   <div className="flex items-center space-x-2">
                     <Eye className="h-4 w-4" />
                     <span className="font-semibold">
