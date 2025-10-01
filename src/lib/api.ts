@@ -1,4 +1,38 @@
 import { supabase } from "../supabaseClient";
+import { supabase } from "../supabaseClient";
+import { StoryRow } from "./api";
+
+export async function fetchBookmarks(userId: string): Promise<StoryRow[]> {
+  const { data, error } = await supabase
+    .from("bookmarks")
+    .select(`
+      story_id,
+      stories (
+        id,
+        title,
+        slug,
+        author,
+        description,
+        coverimage,
+        rating,
+        views,
+        status,
+        genres,
+        lastupdated
+      )
+    `)
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("Error fetching bookmarks:", error);
+    return [];
+  }
+
+  // map về dạng StoryRow cho tiện xài StoryCard
+  return data
+    .map((row) => row.stories)
+    .filter((s): s is StoryRow => !!s);
+}
 
 // ================== Types ==================
 export type StoryRow = {
